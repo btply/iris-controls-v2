@@ -75,6 +75,7 @@ void AppLifecycle::begin() {
 }
 
 void AppLifecycle::tick() {
+  LoggerService::drain();
   const unsigned long nowMs = millis();
 
   IoHal::update();

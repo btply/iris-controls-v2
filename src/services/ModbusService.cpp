@@ -73,7 +73,7 @@ void ModbusService::start() {
   const osStatus status = workerThread.start(mbed::callback(this, &ModbusService::runThread));
   if (status != osOK) {
     running.store(false);
-    LoggerService::error("ModbusService", "thread_start_failed");
+    LoggerService::enqueue(LoggerService::Level::Error, "ModbusService", "thread_start_failed");
   }
 }
 
@@ -144,11 +144,11 @@ bool ModbusService::ensureBusReady(unsigned long nowMs) {
 
   touchHeartbeat();
   if (!ModbusRTUClient.begin(9600, SERIAL_8N1)) {
-    LoggerService::warn("ModbusService", "modbus_begin_failed");
+    LoggerService::enqueue(LoggerService::Level::Warn, "ModbusService", "modbus_begin_failed");
     return false;
   }
   touchHeartbeat();
-  ModbusRTUClient.setTimeout(200);
+  ModbusRTUClient.setTimeout(SystemConfig::kModbusResponseTimeoutMs);
 
   bool shouldLogReady = false;
   stateMutex.lock();
@@ -159,7 +159,7 @@ bool ModbusService::ensureBusReady(unsigned long nowMs) {
   }
   stateMutex.unlock();
   if (shouldLogReady) {
-    LoggerService::info("ModbusService", "bus_ready");
+    LoggerService::enqueue(LoggerService::Level::Info, "ModbusService", "bus_ready");
   }
   return true;
 }
@@ -303,16 +303,16 @@ void ModbusService::pollDevices(unsigned long nowMs) {
       if (lastError == nullptr) {
         lastError = "none";
       }
-      LoggerService::printf(LoggerService::Level::Warn,
-                            "ModbusService",
-                            "read_fail_diag role=%s idx=%u sid=%u tbl=%c reg=0x%04X cnt=%u err=%s",
-                            roleLabel,
-                            static_cast<unsigned int>(localEntry.deviceIndex),
-                            static_cast<unsigned int>(readConfig.slaveId),
-                            tableCode,
-                            static_cast<unsigned int>(readConfig.startRegister),
-                            static_cast<unsigned int>(readConfig.registerCount),
-                            lastError);
+      LoggerService::enqueuePrintf(LoggerService::Level::Warn,
+                                   "ModbusService",
+                                   "read_fail_diag role=%s idx=%u sid=%u tbl=%c reg=0x%04X cnt=%u err=%s",
+                                   roleLabel,
+                                   static_cast<unsigned int>(localEntry.deviceIndex),
+                                   static_cast<unsigned int>(readConfig.slaveId),
+                                   tableCode,
+                                   static_cast<unsigned int>(readConfig.startRegister),
+                                   static_cast<unsigned int>(readConfig.registerCount),
+                                   lastError);
       localEntry.device->markInvalid();
       recordPollFailure(localEntry.role);
       stateMutex.lock();
@@ -328,16 +328,16 @@ void ModbusService::pollDevices(unsigned long nowMs) {
 
     if (SystemConfig::kModbusLogSuccessfulReads) {
       if (localEntry.role == DeviceRole::Weather) {
-        LoggerService::printf(LoggerService::Level::Info,
-                              "ModbusService",
-                              "read_ok_weather_s%u",
-                              static_cast<unsigned int>(readConfig.slaveId));
+        LoggerService::enqueuePrintf(LoggerService::Level::Info,
+                                     "ModbusService",
+                                     "read_ok_weather_s%u",
+                                     static_cast<unsigned int>(readConfig.slaveId));
       } else {
-        LoggerService::printf(LoggerService::Level::Info,
-                              "ModbusService",
-                              "read_ok_cwt%u_s%u",
-                              static_cast<unsigned int>(localEntry.deviceIndex),
-                              static_cast<unsigned int>(readConfig.slaveId));
+        LoggerService::enqueuePrintf(LoggerService::Level::Info,
+                                     "ModbusService",
+                                     "read_ok_cwt%u_s%u",
+                                     static_cast<unsigned int>(localEntry.deviceIndex),
+                                     static_cast<unsigned int>(readConfig.slaveId));
       }
     }
     recordPollSuccess(localEntry.role);

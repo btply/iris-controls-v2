@@ -82,13 +82,13 @@ void MqttService::initNetwork() {
   if (Ethernet.begin(SystemConfig::kEthernetMac) == 0) {
     touchHeartbeat();
     networkReady.store(false);
-    LoggerService::warn("Network", "dhcp_failed");
+    LoggerService::enqueue(LoggerService::Level::Warn, "Network", "dhcp_failed");
     return;
   }
 
   touchHeartbeat();
   networkReady.store(true);
-  LoggerService::info("Network", "dhcp_ready");
+  LoggerService::enqueue(LoggerService::Level::Info, "Network", "dhcp_ready");
 }
 
 void MqttService::serviceNetwork(unsigned long nowMs) {
@@ -113,11 +113,11 @@ void MqttService::serviceNetwork(unsigned long nowMs) {
       if (mqttClient.connected()) {
         mqttClient.disconnect();
       }
-      LoggerService::warn("Network", "dhcp_lost");
+      LoggerService::enqueue(LoggerService::Level::Warn, "Network", "dhcp_lost");
       return;
     case 2:
     case 4:
-      LoggerService::warn("Network", "dhcp_renew_failed");
+      LoggerService::enqueue(LoggerService::Level::Warn, "Network", "dhcp_renew_failed");
       return;
     default:
       return;
@@ -141,13 +141,13 @@ void MqttService::tryReconnect(unsigned long nowMs) {
                          SystemConfig::kMqttUsername,
                          SystemConfig::kMqttPassword)) {
     touchHeartbeat();
-    LoggerService::info("MqttService", "connected");
+    LoggerService::enqueue(LoggerService::Level::Info, "MqttService", "connected");
     reconnectBackoffMs = SystemConfig::kMqttReconnectBackoffMinMs;
     return;
   }
   touchHeartbeat();
 
-  LoggerService::warn("MqttService", "connect_failed");
+  LoggerService::enqueue(LoggerService::Level::Warn, "MqttService", "connect_failed");
   stateMutex.lock();
   connectFailures++;
   stateMutex.unlock();
@@ -182,7 +182,7 @@ void MqttService::flushPendingTelemetry() {
   touchHeartbeat();
   if (!mqttClient.publish(SystemConfig::kMqttTelemetryTopic, payload, false)) {
     touchHeartbeat();
-    LoggerService::warn("MqttService", "publish_failed");
+    LoggerService::enqueue(LoggerService::Level::Warn, "MqttService", "publish_failed");
     stateMutex.lock();
     publishFailures++;
     pendingTelemetry = telemetry;

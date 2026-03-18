@@ -3,6 +3,10 @@
 #include <stdio.h>
 
 void (*LoggerService::timeFormatter)(char* buffer, size_t bufferSize) = nullptr;
+LoggerService::LogEntry LoggerService::logRing[LoggerService::kLogRingSize];
+size_t LoggerService::logRingHead = 0U;
+size_t LoggerService::logRingTail = 0U;
+rtos::Mutex LoggerService::logRingMutex;
 
 void LoggerService::begin(unsigned long baud, unsigned long waitMs) {
   Serial.begin(baud);
@@ -46,6 +50,52 @@ void LoggerService::vprintf(Level level,
   }
   message[sizeof(message) - 1] = '\0';
   writeLine(level, module, message);
+}
+
+void LoggerService::enqueue(Level level, const char* module, const char* message) {
+  logRingMutex.lock();
+  const size_t nextTail = (logRingTail + 1U) % kLogRingSize;
+  if (nextTail == logRingHead) {
+    logRingMutex.unlock();
+    return;
+  }
+  LogEntry& e = logRing[logRingTail];
+  e.level = level;
+  snprintf(e.module, kLogModuleLen, "%s", module != nullptr ? module : "core");
+  e.module[kLogModuleLen - 1U] = '\0';
+  snprintf(e.message, kLogMessageLen, "%s", message != nullptr ? message : "");
+  e.message[kLogMessageLen - 1U] = '\0';
+  logRingTail = nextTail;
+  logRingMutex.unlock();
+}
+
+void LoggerService::enqueuePrintf(Level level, const char* module, const char* fmt, ...) {
+  static char formatBuf[256];
+  static rtos::Mutex formatMutex;
+  formatMutex.lock();
+  va_list args;
+  va_start(args, fmt);
+  const int written = vsnprintf(formatBuf, sizeof(formatBuf), fmt, args);
+  va_end(args);
+  formatBuf[sizeof(formatBuf) - 1U] = '\0';
+  const char* msg = (written >= 0) ? formatBuf : "format_error";
+  enqueue(level, module, msg);
+  formatMutex.unlock();
+}
+
+void LoggerService::drain() {
+  static const size_t kDrainMax = kLogRingSize;
+  LogEntry drained[kDrainMax];
+  size_t drainedCount = 0U;
+  logRingMutex.lock();
+  while (logRingHead != logRingTail && drainedCount < kDrainMax) {
+    drained[drainedCount++] = logRing[logRingHead];
+    logRingHead = (logRingHead + 1U) % kLogRingSize;
+  }
+  logRingMutex.unlock();
+  for (size_t i = 0U; i < drainedCount; i++) {
+    writeLine(drained[i].level, drained[i].module, drained[i].message);
+  }
 }
 
 const char* LoggerService::levelTag(Level level) {
