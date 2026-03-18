@@ -3,10 +3,10 @@
 
 #include "../config/SystemConfig.h"
 #include "../control/MinimalClimatePlanner.h"
+#include "../core/DeviceRegistry.h"
 #include "../services/CurtainService.h"
 #include "../services/ModbusService.h"
 #include "../services/MqttServiceLite.h"
-#include "SharedState.h"
 
 class AppLifecycle {
  public:
@@ -35,8 +35,10 @@ class AppLifecycle {
   unsigned long lastTelemetryTickMs = 0UL;
   ModbusService::Health lastModbusHealth;
   MqttService::Health lastMqttHealth;
+  ClimateIntent lastIntent;
+  CurtainPlan lastPlan;
 
-  SharedState sharedState;
+  DeviceRegistry devices;
   ModbusService modbusService;
   MqttService mqttService;
   CurtainService curtainService;

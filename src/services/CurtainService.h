@@ -2,7 +2,7 @@
 #define CURTAIN_SERVICE_H
 
 #include "../control/CurtainController.h"
-#include "../core/SharedState.h"
+#include "../core/AppDataTypes.h"
 #include <array>
 #include <atomic>
 #include <mbed.h>
@@ -18,7 +18,7 @@ class CurtainService {
   void start();
   void stop();
 
-  void setTargets(const std::array<float, SharedStateConfig::kCurtainCount>& targets,
+  void setTargets(const std::array<float, AppDataConfig::kCurtainCount>& targets,
                   bool emergencyClose);
   CurtainPlan getPlanSnapshot() const;
   Health getHealth() const;
@@ -38,19 +38,18 @@ class CurtainService {
   std::atomic<bool> running{false};
 
   mutable rtos::Mutex commandMutex;
-  std::array<float, SharedStateConfig::kCurtainCount> desiredTargets = {0.0f, 0.0f, 0.0f,
-                                                                         0.0f};
+  std::array<float, AppDataConfig::kCurtainCount> desiredTargets = {0.0f, 0.0f, 0.0f, 0.0f};
   bool desiredEmergencyClose = false;
 
   mutable rtos::Mutex stateMutex;
   CurtainPlan currentPlan;
   unsigned long lastLoopMs = 0UL;
 
-  CurtainController controllers[SharedStateConfig::kCurtainCount] = {
+  CurtainController controllers[AppDataConfig::kCurtainCount] = {
       CurtainController(0), CurtainController(1), CurtainController(2),
       CurtainController(3)};
 
-  mbed::Timeout movementTimeouts[SharedStateConfig::kCurtainCount];
+  mbed::Timeout movementTimeouts[AppDataConfig::kCurtainCount];
 };
 
 #endif  // CURTAIN_SERVICE_H

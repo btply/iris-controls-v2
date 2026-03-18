@@ -1,7 +1,7 @@
 #ifndef MQTT_SERVICE_LITE_H
 #define MQTT_SERVICE_LITE_H
 
-#include "../core/SharedState.h"
+#include "../core/AppDataTypes.h"
 #include <Ethernet.h>
 #include <PubSubClient.h>
 #include <atomic>
@@ -36,7 +36,7 @@ class MqttService {
     unsigned long ioExpansionConsecutiveFailures = 0UL;
   };
 
-  void begin(SharedState* sharedStateIn);
+  void begin();
 
   void start();
   void stop();
@@ -56,7 +56,6 @@ class MqttService {
                              size_t outSize,
                              const TelemetrySnapshot& telemetry) const;
 
-  SharedState* sharedState = nullptr;
   EthernetClient ethernetClient;
   mutable PubSubClient mqttClient{ethernetClient};
   rtos::Thread workerThread;

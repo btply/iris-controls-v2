@@ -1,61 +1,55 @@
 #ifndef MODBUS_SERVICE_H
 #define MODBUS_SERVICE_H
 
-#include "../core/SharedState.h"
-#include "../devices/CwtDevice.h"
-#include "../devices/WeatherDevice.h"
+#include "../devices/IModbusDevice.h"
 #include <atomic>
 #include <mbed.h>
 
 class ModbusService {
  public:
+  enum class DeviceRole : uint8_t {
+    Weather = 0U,
+    Cwt = 1U,
+  };
+
   struct Health {
     bool busReady = false;
-    bool weatherFresh = false;
-    bool cwtFresh = false;
     bool degraded = false;
     unsigned long lastLoopMs = 0UL;
-    unsigned long lastWeatherSuccessMs = 0UL;
-    unsigned long lastCwtSuccessMs = 0UL;
     unsigned long totalReadFailures = 0UL;
     unsigned long weatherConsecutiveFailures = 0UL;
     unsigned long cwtConsecutiveFailures = 0UL;
   };
 
-  struct WeatherLatestSnapshot {
-    WeatherSnapshot data;
-    bool stale = true;
-  };
-
-  struct CwtLatestSnapshot {
-    CwtSnapshot data;
-    bool stale = true;
-  };
-
-  struct ModbusSnapshot {
-    WeatherLatestSnapshot weather;
-    CwtLatestSnapshot cwt[SharedStateConfig::kCwtCount];
-  };
-
-  void begin(SharedState* sharedStateIn);
+  void begin();
+  bool registerDevice(IModbusDevice& device,
+                      DeviceRole role,
+                      unsigned long pollIntervalMs,
+                      uint8_t deviceIndex = 0U);
 
   void start();
   void stop();
 
-  bool hasFreshData(unsigned long nowMs) const;
-  Health getHealth(unsigned long nowMs) const;
-  WeatherLatestSnapshot getLatestWeather() const;
-  CwtLatestSnapshot getLatestCwt(uint8_t index) const;
-  ModbusSnapshot getLatestSnapshot() const;
+  Health getHealth() const;
 
  private:
-  static const uint8_t kCwtSensorCount = SharedStateConfig::kCwtCount;
-  static const uint8_t kWeatherSlaveId = 20U;
-  static const uint8_t kCwtSlaveIds[kCwtSensorCount];
-  static const bool kUseSyntheticDataIfBusUnavailable = false;
+  struct PollEntry {
+    IModbusDevice* device = nullptr;
+    DeviceRole role = DeviceRole::Cwt;
+    uint8_t deviceIndex = 0U;
+    unsigned long pollIntervalMs = 0UL;
+    unsigned long lastPollMs = 0UL;
+  };
+
+  static const uint8_t kMaxDevices = 8U;
+  static const uint16_t kMaxRegistersPerPoll = 16U;
 
   void runThread();
+  void pollDevices(unsigned long nowMs);
+  void recordPollSuccess(DeviceRole role);
+  void recordPollFailure(DeviceRole role);
   bool ensureBusReady(unsigned long nowMs);
+  bool readRegisters(const ModbusReadConfig& config, uint16_t* outRegisters);
   bool readHoldingRegisters(uint8_t slaveId,
                             uint16_t startRegister,
                             uint16_t registerCount,
@@ -64,35 +58,21 @@ class ModbusService {
                           uint16_t startRegister,
                           uint16_t registerCount,
                           uint16_t* outRegisters);
-  void readWeatherIfDue(unsigned long nowMs);
-  void readCwtIfDue(unsigned long nowMs);
   void touchHeartbeat();
-  bool isWeatherFreshLocked(unsigned long nowMs) const;
-  bool isCwtFreshLocked(unsigned long nowMs) const;
   bool isDegradedLocked() const;
 
-  bool readWeatherFromBus(WeatherSnapshot* out, unsigned long nowMs);
-  bool readCwtFromBus(uint8_t sensorIndex, CwtSnapshot* out, unsigned long nowMs);
-  void fillSyntheticWeather(WeatherSnapshot* out, unsigned long nowMs) const;
-  void fillSyntheticCwt(uint8_t sensorIndex, CwtSnapshot* out, unsigned long nowMs) const;
-
-  SharedState* sharedState = nullptr;
   rtos::Thread workerThread;
   std::atomic<bool> running{false};
   mutable rtos::Mutex stateMutex;
+  PollEntry pollEntries[kMaxDevices];
+  uint8_t pollEntryCount = 0U;
   bool busReady = false;
   bool busReadyLogged = false;
   unsigned long lastBusInitAttemptMs = 0UL;
   unsigned long lastLoopMs = 0UL;
-  unsigned long lastWeatherSuccessMs = 0UL;
-  unsigned long lastCwtSuccessMs = 0UL;
   unsigned long totalReadFailures = 0UL;
   unsigned long weatherConsecutiveFailures = 0UL;
   unsigned long cwtConsecutiveFailures = 0UL;
-  unsigned long lastWeatherPollMs = 0UL;
-  unsigned long lastCwtPollMs = 0UL;
-  WeatherDevice weatherDevice;
-  CwtDevice cwtDevices[kCwtSensorCount];
 };
 
 #endif  // MODBUS_SERVICE_H
