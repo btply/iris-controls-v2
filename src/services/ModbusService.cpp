@@ -282,6 +282,24 @@ void ModbusService::pollDevices(unsigned long nowMs) {
     }
 
     if (!ok) {
+      const char tableCode =
+          (readConfig.registerKind == ModbusRegisterKind::Input) ? 'I' : 'H';
+      const char* roleLabel =
+          (localEntry.role == DeviceRole::Weather) ? "weather" : "cwt";
+      const char* lastError = ModbusRTUClient.lastError();
+      if (lastError == nullptr) {
+        lastError = "none";
+      }
+      LoggerService::printf(LoggerService::Level::Warn,
+                            "ModbusService",
+                            "read_fail_diag role=%s idx=%u sid=%u tbl=%c reg=0x%04X cnt=%u err=%s",
+                            roleLabel,
+                            static_cast<unsigned int>(localEntry.deviceIndex),
+                            static_cast<unsigned int>(readConfig.slaveId),
+                            tableCode,
+                            static_cast<unsigned int>(readConfig.startRegister),
+                            static_cast<unsigned int>(readConfig.registerCount),
+                            lastError);
       if (localEntry.role == DeviceRole::Weather) {
         LoggerService::printf(LoggerService::Level::Warn,
                               "ModbusService",
