@@ -1,7 +1,7 @@
 /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/ModbusService.cpp.o: \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/ModbusService.cpp \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/ModbusService.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../core/SharedState.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../devices/IModbusDevice.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/Arduino.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/pinmode_arduino.h \
@@ -385,9 +385,6 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_stats.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/Stream.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/FileLike.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../devices/CwtDevice.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../devices/../core/SharedState.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../devices/WeatherDevice.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../config/SystemConfig.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/LoggerService.h \
  /home/billy/Arduino/libraries/ArduinoModbus/src/ArduinoModbus.h \

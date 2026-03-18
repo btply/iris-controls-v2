@@ -1,8 +1,8 @@
 /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/MqttServiceLite.cpp.o: \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/MqttServiceLite.cpp \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/MqttServiceLite.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../core/SharedState.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../core/AppDataTypes.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/Ethernet.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/Arduino.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/pinmode_arduino.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/mbed_config.h \
@@ -130,7 +130,6 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/Compat.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/pins_arduino.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/macros.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/Arduino.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/targets/TARGET_STM/TARGET_STM32H7/TARGET_STM32H747xI/TARGET_OPTA/PinNames.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/FileHandle.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/Callback.h \
@@ -178,48 +177,21 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/targets/TARGET_STM/TARGET_STM32H7/objects.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/Serial.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/RingBuffer.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/Arduino.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/HardwareSerial.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/timer.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/overloads.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/mbed.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_version.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/mbed_config.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/rtos.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/internal/mbed_rtos_storage.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/rtos/include/mbed_rtx_storage.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Include/rtx_os.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/Include/cmsis_os2.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Include/rtx_def.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/RTE/include/RTE_Components.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/rtos/include/mbed_rtx_conf.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/targets/TARGET_STM/mbed_rtx.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/mbed_cmsis_conf.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Config/RTX_Config.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/rtos/include/mbed_rtx_conf.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Kernel.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/mbed_rtos_types.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Thread.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/internal/mbed_rtos1_types.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Include1/cmsis_os.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Semaphore.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Mutex.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/ScopedLock.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/ThisThread.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Mail.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Queue.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_error.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/MemoryPool.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/EventFlags.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/ConditionVariable.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/nsapi.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/SocketHelpers.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/NetworkInterface.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/nsapi_types.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_toolchain.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/SocketAddress.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/NetworkStack.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/NetworkInterface.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/nsapi_types.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/Callback.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/DNS.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/EthernetInterface.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/nsapi.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/NetworkStack.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/EthInterface.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/WiFiInterface.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/WiFiAccessPoint.h \
@@ -228,6 +200,24 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/Socket.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/UDPSocket.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/InternetSocket.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Mutex.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/mbed_rtos_types.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/Include/cmsis_os2.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/internal/mbed_rtos1_types.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Include1/cmsis_os.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Include/rtx_os.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Include/rtx_def.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/RTE/include/RTE_Components.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/rtos/include/mbed_rtx_conf.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/targets/TARGET_STM/mbed_rtx.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/mbed_cmsis_conf.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Config/RTX_Config.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/internal/mbed_rtos_storage.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/rtos/include/mbed_rtx_storage.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/rtos/include/mbed_rtx_conf.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Kernel.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/ScopedLock.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/EventFlags.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_atomic.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/internal/mbed_atomic_impl.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/SocketStats.h \
@@ -272,9 +262,41 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/DTLSSocket.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/DTLSSocketWrapper.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/UDPSocket.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/nsapi_ppp.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/FileHandle.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/EMACInterface.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/EMAC.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/EMACMemoryManager.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/NetStackMemoryManager.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/OnboardNetworkStack.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/NetworkStack.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/L3IP.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/PPP.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/FileHandle.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/EthernetClient.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/Ethernet.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/AClient.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/MbedClient.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/SocketHelpers.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/Client.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/TLSSocket.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/TCPSocket.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/rtos.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Thread.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Semaphore.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/ThisThread.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Mail.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Queue.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_error.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/MemoryPool.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/ConditionVariable.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/EthernetServer.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/MbedServer.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/mbed.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_version.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/mbed_config.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/rtos.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/nsapi.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/nsapi_ppp.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/events/include/events/mbed_events.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/events/include/events/EventQueue.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/events/include/events/equeue.h \
@@ -385,28 +407,6 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_stats.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/Stream.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/FileLike.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/Ethernet.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/SocketHelpers.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/EthernetInterface.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/nsapi.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/EMACInterface.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/EMAC.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/EMACMemoryManager.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/NetStackMemoryManager.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/OnboardNetworkStack.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/L3IP.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/PPP.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/EthernetClient.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/Ethernet.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/AClient.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/MbedClient.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/SocketHelpers.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/Client.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/TLSSocket.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/TCPSocket.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/rtos.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/EthernetServer.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/MbedServer.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/EthernetUdp.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/MbedUdp.h \
  /home/billy/Arduino/libraries/PubSubClient/src/PubSubClient.h \

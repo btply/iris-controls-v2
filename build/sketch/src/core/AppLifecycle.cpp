@@ -11,16 +11,53 @@ void AppLifecycle::begin() {
   LoggerService::begin(115200UL, 1500UL);
   LoggerService::info("AppLifecycle", "startup");
 
-  sharedState.reset();
   OptaController.begin();
 
   IoHal::begin();
 
   curtainService.begin();
 
-  modbusService.begin(&sharedState);
-  mqttService.begin(&sharedState);
+  modbusService.begin();
+  mqttService.begin();
 
+  devices.weather.reset();
+  if (!modbusService.registerDevice(
+          devices.weather,
+          ModbusService::DeviceRole::Weather,
+          SystemConfig::kWeatherPollIntervalMs,
+          0U)) {
+    LoggerService::error("AppLifecycle", "register_weather_failed");
+  }
+
+  struct CwtPollConfig {
+    uint8_t index;
+    uint8_t slaveId;
+    unsigned long pollIntervalMs;
+  };
+
+  static const CwtPollConfig kCwtPollConfig[AppDataConfig::kCwtCount] = {
+      {0U, 2U, SystemConfig::kCwtPollIntervalMs},
+      {1U, 3U, SystemConfig::kCwtPollIntervalMs},
+      {2U, 4U, SystemConfig::kCwtPollIntervalMs},
+      {3U, 5U, SystemConfig::kCwtPollIntervalMs},
+  };
+
+  for (uint8_t i = 0; i < AppDataConfig::kCwtCount; i++) {
+    const CwtPollConfig& config = kCwtPollConfig[i];
+    devices.cwt[config.index].setSlaveId(config.slaveId);
+    devices.cwt[config.index].reset();
+    if (!modbusService.registerDevice(devices.cwt[config.index],
+                                      ModbusService::DeviceRole::Cwt,
+                                      config.pollIntervalMs,
+                                      config.index)) {
+      LoggerService::printf(LoggerService::Level::Error,
+                            "AppLifecycle",
+                            "register_cwt%u_failed",
+                            static_cast<unsigned int>(config.index));
+    }
+  }
+
+  modbusService.start();
   mqttService.start();
 
   curtainService.start();
@@ -32,6 +69,8 @@ void AppLifecycle::begin() {
   mqttWatchdogFault = false;
   modbusWatchdogFaultLogged = false;
   mqttWatchdogFaultLogged = false;
+  lastIntent = ClimateIntent{};
+  lastPlan = CurtainPlan{};
   lastControlTickMs = millis();
   lastTelemetryTickMs = millis();
 }
@@ -55,7 +94,7 @@ void AppLifecycle::tick() {
 }
 
 void AppLifecycle::updateSupervisor(unsigned long nowMs) {
-  lastModbusHealth = modbusService.getHealth(nowMs);
+  lastModbusHealth = modbusService.getHealth();
   lastMqttHealth = mqttService.getHealth();
 
   if (lastModbusHealth.lastLoopMs == 0UL) {
@@ -86,7 +125,15 @@ void AppLifecycle::updateSupervisor(unsigned long nowMs) {
     mqttWatchdogFaultLogged = false;
   }
 
-  const bool hasFreshData = modbusService.hasFreshData(nowMs);
+  const bool weatherFresh = devices.weather.isFresh(nowMs, SystemConfig::kWeatherFreshMaxAgeMs);
+  bool allCwtFresh = true;
+  for (uint8_t i = 0; i < AppDataConfig::kCwtCount; i++) {
+    if (!devices.cwt[i].isFresh(nowMs, SystemConfig::kCwtFreshMaxAgeMs)) {
+      allCwtFresh = false;
+      break;
+    }
+  }
+  const bool hasFreshData = weatherFresh && allCwtFresh;
   const bool hasServiceFaults =
       modbusWatchdogFault || mqttWatchdogFault || lastModbusHealth.degraded;
 
@@ -115,7 +162,27 @@ void AppLifecycle::updateSupervisor(unsigned long nowMs) {
 }
 
 void AppLifecycle::runControlTick(unsigned long nowMs) {
-  const PlannerInput plannerInput = sharedState.copyPlannerInput(nowMs);
+  PlannerInput plannerInput;
+  plannerInput.nowMs = nowMs;
+  plannerInput.weather = devices.weather.getSnapshot();
+  float tempSum = 0.0f;
+  float rhSum = 0.0f;
+  uint8_t validCount = 0U;
+  for (uint8_t i = 0; i < AppDataConfig::kCwtCount; i++) {
+    plannerInput.cwt[i] = devices.cwt[i].getSnapshot();
+    if (!plannerInput.cwt[i].valid) {
+      continue;
+    }
+    tempSum += plannerInput.cwt[i].tempC;
+    rhSum += plannerInput.cwt[i].rhPct;
+    validCount++;
+  }
+  if (validCount > 0U) {
+    plannerInput.hasCwtAverage = true;
+    plannerInput.cwtAverageTempC = tempSum / static_cast<float>(validCount);
+    plannerInput.cwtAverageRhPct = rhSum / static_cast<float>(validCount);
+  }
+
   ClimateIntent intent;
   if (controlEnabled) {
     intent = climatePlanner.computeIntent(plannerInput, nowMs);
@@ -124,26 +191,33 @@ void AppLifecycle::runControlTick(unsigned long nowMs) {
     intent.ventRequested = false;
     intent.targetPosition = 0.0f;
   }
+  lastIntent = intent;
 
-  std::array<float, SharedStateConfig::kCurtainCount> targets = {intent.targetPosition,
-                                                                  intent.targetPosition,
-                                                                  intent.targetPosition,
-                                                                  intent.targetPosition};
+  std::array<float, AppDataConfig::kCurtainCount> targets = {intent.targetPosition,
+                                                              intent.targetPosition,
+                                                              intent.targetPosition,
+                                                              intent.targetPosition};
   if (intent.emergencyClose) {
     targets = {0.0f, 0.0f, 0.0f, 0.0f};
   }
   curtainService.setTargets(targets, intent.emergencyClose);
-  const CurtainPlan plan = curtainService.getPlanSnapshot();
-  sharedState.applyPlan(plan, intent, nowMs);
+  lastPlan = curtainService.getPlanSnapshot();
 }
 
 void AppLifecycle::runTelemetryTick(unsigned long nowMs) {
-  const TelemetrySnapshot telemetry = sharedState.copyTelemetry(nowMs);
-  const ModbusService::ModbusSnapshot modbusSnapshot = modbusService.getLatestSnapshot();
+  TelemetrySnapshot telemetry;
+  telemetry.nowMs = nowMs;
+  telemetry.weather = devices.weather.getSnapshot();
+  for (uint8_t i = 0; i < AppDataConfig::kCwtCount; i++) {
+    telemetry.cwt[i] = devices.cwt[i].getSnapshot();
+  }
+  telemetry.intent = lastIntent;
+  telemetry.plan = lastPlan;
+
   const IoHal::Status ioStatus = IoHal::getStatus();
   bool allCwtFresh = true;
-  for (uint8_t i = 0; i < SharedStateConfig::kCwtCount; i++) {
-    if (modbusSnapshot.cwt[i].stale) {
+  for (uint8_t i = 0; i < AppDataConfig::kCwtCount; i++) {
+    if (!devices.cwt[i].isFresh(nowMs, SystemConfig::kCwtFreshMaxAgeMs)) {
       allCwtFresh = false;
       break;
     }
@@ -152,7 +226,8 @@ void AppLifecycle::runTelemetryTick(unsigned long nowMs) {
   MqttService::RuntimeStatus runtimeStatus;
   runtimeStatus.supervisorState = static_cast<uint8_t>(supervisorState);
   runtimeStatus.controlEnabled = controlEnabled;
-  runtimeStatus.modbusWeatherFresh = !modbusSnapshot.weather.stale;
+  runtimeStatus.modbusWeatherFresh =
+      devices.weather.isFresh(nowMs, SystemConfig::kWeatherFreshMaxAgeMs);
   runtimeStatus.modbusCwtFresh = allCwtFresh;
   runtimeStatus.modbusDegraded = lastModbusHealth.degraded || modbusWatchdogFault;
   runtimeStatus.modbusWatchdogFault = modbusWatchdogFault;

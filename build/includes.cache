@@ -460,57 +460,6 @@
   },
   {
     "compile": {
-      "source_path": "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/SharedState.cpp",
-      "object_path": "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/SharedState.cpp.o",
-      "depfile_path": "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/SharedState.cpp.d"
-    },
-    "compile_task": {
-      "args": [
-        "/home/billy/.arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++",
-        "-c",
-        "-w",
-        "-g3",
-        "-nostdlib",
-        "@/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/defines.txt",
-        "@/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/cxxflags.txt",
-        "-mcpu=cortex-m7",
-        "-mfloat-abi=softfp",
-        "-mfpu=fpv5-d16",
-        "-w",
-        "-x",
-        "c++",
-        "-E",
-        "-CC",
-        "-DARDUINO=10607",
-        "-DARDUINO_OPTA",
-        "-DARDUINO_ARCH_MBED_OPTA",
-        "-DARDUINO_ARCH_MBED",
-        "-DARDUINO_LIBRARY_DISCOVERY_PHASE=1",
-        "-I/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino",
-        "-I/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA",
-        "-I/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src",
-        "-I/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src",
-        "-I/home/billy/Arduino/libraries/PubSubClient/src",
-        "-I/home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src",
-        "-I/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Wire",
-        "-DCM4_BINARY_START=0x60000000",
-        "-DCM4_BINARY_END=0x60040000",
-        "-DCM4_RAM_END=0x60080000",
-        "-I/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/deprecated",
-        "-I/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/deprecated-avr-comp",
-        "-iprefix/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino",
-        "@/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/../OPTA/includes.txt",
-        "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/SharedState.cpp",
-        "-o",
-        "/dev/null"
-      ]
-    }
-  },
-  {
-    "missing_include_h": ""
-  },
-  {
-    "compile": {
       "source_path": "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/hal/IoHalLite.cpp",
       "object_path": "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/hal/IoHalLite.cpp.o",
       "depfile_path": "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/hal/IoHalLite.cpp.d"

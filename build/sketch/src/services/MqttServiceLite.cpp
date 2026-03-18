@@ -6,13 +6,12 @@
 #include <Arduino.h>
 #include <stdio.h>
 
-void MqttService::begin(SharedState* sharedStateIn) {
-  sharedState = sharedStateIn;
+void MqttService::begin() {
   mqttClient.setServer(SystemConfig::kMqttBrokerHost, SystemConfig::kMqttBrokerPort);
 }
 
 void MqttService::start() {
-  if (running.load() || sharedState == nullptr) {
+  if (running.load()) {
     return;
   }
   running.store(true);
@@ -220,7 +219,7 @@ bool MqttService::buildTelemetryPayload(char* out,
   float avgTempC = 0.0f;
   float avgRhPct = 0.0f;
   uint8_t count = 0U;
-  for (uint8_t i = 0; i < SharedStateConfig::kCwtCount; i++) {
+  for (uint8_t i = 0; i < AppDataConfig::kCwtCount; i++) {
     if (!telemetry.cwt[i].valid) {
       continue;
     }

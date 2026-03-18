@@ -8,7 +8,7 @@
 #include <chrono>
 
 void CurtainService::onCurtainTimeout(uint8_t index) {
-  if (index >= SharedStateConfig::kCurtainCount) {
+  if (index >= AppDataConfig::kCurtainCount) {
     return;
   }
   const uint8_t ch = controllers[index].getOutputChannel();
@@ -23,7 +23,7 @@ void CurtainService::onCurtainTimeout2() { onCurtainTimeout(2); }
 void CurtainService::onCurtainTimeout3() { onCurtainTimeout(3); }
 
 void CurtainService::armCurtainTimeout(uint8_t index, unsigned long runMs) {
-  if (index >= SharedStateConfig::kCurtainCount || runMs == 0UL) {
+  if (index >= AppDataConfig::kCurtainCount || runMs == 0UL) {
     return;
   }
   movementTimeouts[index].detach();
@@ -54,14 +54,14 @@ void CurtainService::armCurtainTimeout(uint8_t index, unsigned long runMs) {
 }
 
 void CurtainService::disarmAllCurtainTimeouts() {
-  for (uint8_t i = 0; i < SharedStateConfig::kCurtainCount; i++) {
+  for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
     movementTimeouts[i].detach();
   }
 }
 
 void CurtainService::begin() {
   disarmAllCurtainTimeouts();
-  for (uint8_t i = 0; i < SharedStateConfig::kCurtainCount; i++) {
+  for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
     controllers[i].begin();
   }
 
@@ -94,7 +94,7 @@ void CurtainService::stop() {
 }
 
 void CurtainService::setTargets(
-    const std::array<float, SharedStateConfig::kCurtainCount>& targets,
+    const std::array<float, AppDataConfig::kCurtainCount>& targets,
     bool emergencyClose) {
   commandMutex.lock();
   desiredTargets = targets;
@@ -128,14 +128,14 @@ void CurtainService::runThread() {
   while (running.load()) {
     const unsigned long nowMs = millis();
 
-    std::array<float, SharedStateConfig::kCurtainCount> localTargets;
+    std::array<float, AppDataConfig::kCurtainCount> localTargets;
     bool localEmergencyClose = false;
     commandMutex.lock();
     localTargets = desiredTargets;
     localEmergencyClose = desiredEmergencyClose;
     commandMutex.unlock();
 
-    for (uint8_t i = 0; i < SharedStateConfig::kCurtainCount; i++) {
+    for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
       if (localEmergencyClose) {
         controllers[i].emergencyClose();
       } else {
@@ -143,18 +143,18 @@ void CurtainService::runThread() {
       }
     }
 
-    std::array<bool, SharedStateConfig::kCurtainCount> wantOpen = {false, false, false,
+    std::array<bool, AppDataConfig::kCurtainCount> wantOpen = {false, false, false,
                                                                     false};
-    std::array<bool, SharedStateConfig::kCurtainCount> wantClose = {false, false, false,
+    std::array<bool, AppDataConfig::kCurtainCount> wantClose = {false, false, false,
                                                                      false};
-    std::array<bool, SharedStateConfig::kCurtainCount> ranOpen = {false, false, false,
+    std::array<bool, AppDataConfig::kCurtainCount> ranOpen = {false, false, false,
                                                                    false};
-    std::array<bool, SharedStateConfig::kCurtainCount> ranClose = {false, false, false,
+    std::array<bool, AppDataConfig::kCurtainCount> ranClose = {false, false, false,
                                                                     false};
 
     bool anyNeedOpen = false;
     bool anyNeedClose = false;
-    for (uint8_t i = 0; i < SharedStateConfig::kCurtainCount; i++) {
+    for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
       if (localEmergencyClose) {
         wantClose[i] = controllers[i].currentPosition() > emergencyCloseEpsilon;
         anyNeedClose = anyNeedClose || wantClose[i];
@@ -167,7 +167,7 @@ void CurtainService::runThread() {
     }
 
     if (anyNeedOpen) {
-      for (uint8_t i = 0; i < SharedStateConfig::kCurtainCount; i++) {
+      for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
         if (wantOpen[i] && controllers[i].applyOpen()) {
           ranOpen[i] = true;
           armCurtainTimeout(i, openSliceMs);
@@ -177,7 +177,7 @@ void CurtainService::runThread() {
       if (!IoHal::isAnyOutputEnabled()) {
         IoHal::writeSharedSignalLevel(false, false);
       }
-      for (uint8_t i = 0; i < SharedStateConfig::kCurtainCount; i++) {
+      for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
         if (ranOpen[i]) {
           controllers[i].advancePosition(true, openSliceMs);
         }
@@ -185,7 +185,7 @@ void CurtainService::runThread() {
     }
 
     if (anyNeedClose) {
-      for (uint8_t i = 0; i < SharedStateConfig::kCurtainCount; i++) {
+      for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
         if (wantClose[i] && controllers[i].applyClose()) {
           ranClose[i] = true;
           armCurtainTimeout(i, closeSliceMs);
@@ -195,7 +195,7 @@ void CurtainService::runThread() {
       if (!IoHal::isAnyOutputEnabled()) {
         IoHal::writeSharedSignalLevel(false, false);
       }
-      for (uint8_t i = 0; i < SharedStateConfig::kCurtainCount; i++) {
+      for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
         if (ranClose[i]) {
           controllers[i].advancePosition(false, closeSliceMs);
         }
@@ -205,7 +205,7 @@ void CurtainService::runThread() {
     CurtainPlan localPlan;
     localPlan.valid = true;
     localPlan.emergencyClose = localEmergencyClose;
-    for (uint8_t i = 0; i < SharedStateConfig::kCurtainCount; i++) {
+    for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
       localPlan.targetByCurtain[i] = controllers[i].targetPosition();
     }
 
@@ -222,7 +222,7 @@ void CurtainService::runThread() {
   }
 
   disarmAllCurtainTimeouts();
-  for (uint8_t i = 0; i < SharedStateConfig::kCurtainCount; i++) {
+  for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
     controllers[i].stop();
   }
   LoggerService::info("CurtainService", "stopped");

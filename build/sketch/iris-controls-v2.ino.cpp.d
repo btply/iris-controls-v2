@@ -181,7 +181,12 @@
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/AppLifecycle.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../config/SystemConfig.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../control/MinimalClimatePlanner.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../control/../core/SharedState.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../control/../core/AppDataTypes.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/DeviceRegistry.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/AppDataTypes.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/../devices/CwtDevice.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/../devices/IModbusDevice.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/../devices/../core/AppDataTypes.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/mbed.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_version.h \
@@ -387,13 +392,12 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_stats.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/Stream.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/FileLike.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/../devices/WeatherDevice.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/CurtainService.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../control/CurtainController.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../core/SharedState.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../core/AppDataTypes.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/ModbusService.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../devices/CwtDevice.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../devices/../core/SharedState.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../devices/WeatherDevice.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../devices/IModbusDevice.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/MqttServiceLite.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/Ethernet.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/SocketHelpers.h \
@@ -422,5 +426,4 @@
  /home/billy/Arduino/libraries/PubSubClient/src/PubSubClient.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/deprecated/IPAddress.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/deprecated/Client.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/deprecated/Stream.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/SharedState.h
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/deprecated/Stream.h

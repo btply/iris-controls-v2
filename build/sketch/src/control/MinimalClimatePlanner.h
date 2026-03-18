@@ -2,7 +2,7 @@
 #ifndef MINIMAL_CLIMATE_PLANNER_H
 #define MINIMAL_CLIMATE_PLANNER_H
 
-#include "../core/SharedState.h"
+#include "../core/AppDataTypes.h"
 
 class MinimalClimatePlanner {
  public:
