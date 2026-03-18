@@ -36,10 +36,10 @@ void AppLifecycle::begin() {
   };
 
   static const CwtPollConfig kCwtPollConfig[AppDataConfig::kCwtCount] = {
-      {0U, 2U, SystemConfig::kCwtPollIntervalMs},
-      {1U, 3U, SystemConfig::kCwtPollIntervalMs},
-      {2U, 4U, SystemConfig::kCwtPollIntervalMs},
-      {3U, 5U, SystemConfig::kCwtPollIntervalMs},
+      {0U, 1U, SystemConfig::kCwtPollIntervalMs},
+      {1U, 2U, SystemConfig::kCwtPollIntervalMs},
+      {2U, 3U, SystemConfig::kCwtPollIntervalMs},
+      {3U, 4U, SystemConfig::kCwtPollIntervalMs},
   };
 
   for (uint8_t i = 0; i < AppDataConfig::kCwtCount; i++) {
