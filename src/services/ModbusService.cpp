@@ -30,23 +30,15 @@ void ModbusService::begin(SharedState* sharedStateIn) {
   }
 
   stateMutex.unlock();
-}
 
-void ModbusService::start() {
-  if (running.load() || sharedState == nullptr) {
-    return;
-  }
-  running.store(true);
+  RS485.setDelays(200, 1500);
+
+  ModbusRTUClient.begin(9600, SERIAL_8N1);
+  ModbusRTUClient.setTimeout(200);
+
   workerThread.start(mbed::callback(this, &ModbusService::runThread));
 }
 
-void ModbusService::stop() {
-  if (!running.load()) {
-    return;
-  }
-  running.store(false);
-  workerThread.join();
-}
 
 bool ModbusService::hasFreshData(unsigned long nowMs) const {
   stateMutex.lock();
@@ -151,11 +143,6 @@ void ModbusService::runThread() {
   while (running.load()) {
     touchHeartbeat();
     const unsigned long nowMs = millis();
-    if (!ensureBusReady(nowMs)) {
-      touchHeartbeat();
-      rtos::ThisThread::sleep_for(SystemConfig::kModbusLoopSleepMs);
-      continue;
-    }
     touchHeartbeat();
     readWeatherIfDue(nowMs);
     touchHeartbeat();
@@ -165,50 +152,6 @@ void ModbusService::runThread() {
   }
 }
 
-bool ModbusService::ensureBusReady(unsigned long nowMs) {
-  {
-    stateMutex.lock();
-    if (busReady) {
-      stateMutex.unlock();
-      return true;
-    }
-    if (nowMs - lastBusInitAttemptMs < 2000UL) {
-      stateMutex.unlock();
-      return false;
-    }
-    lastBusInitAttemptMs = nowMs;
-    stateMutex.unlock();
-  }
-
-#if defined(ARDUINO_ARCH_MBED)
-  touchHeartbeat();
-  RS485.begin(9600, SERIAL_8N1);
-  touchHeartbeat();
-#else
-  touchHeartbeat();
-  if (!RS485.begin(9600, SERIAL_8N1)) {
-    LoggerService::warn("ModbusService", "rs485_begin_failed");
-    return false;
-  }
-  touchHeartbeat();
-#endif
-  touchHeartbeat();
-  if (!ModbusRTUClient.begin(9600, SERIAL_8N1)) {
-    LoggerService::warn("ModbusService", "modbus_begin_failed");
-    return false;
-  }
-  touchHeartbeat();
-  ModbusRTUClient.setTimeout(200);
-
-  stateMutex.lock();
-  busReady = true;
-  if (!busReadyLogged) {
-    LoggerService::info("ModbusService", "bus_ready");
-    busReadyLogged = true;
-  }
-  stateMutex.unlock();
-  return true;
-}
 
 bool ModbusService::readHoldingRegisters(uint8_t slaveId,
                                          uint16_t startRegister,

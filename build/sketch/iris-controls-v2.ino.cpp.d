@@ -391,6 +391,9 @@
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../control/CurtainController.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../core/SharedState.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/ModbusService.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../devices/CwtDevice.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../devices/../core/SharedState.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../devices/WeatherDevice.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/MqttServiceLite.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/Ethernet.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/SocketHelpers.h \

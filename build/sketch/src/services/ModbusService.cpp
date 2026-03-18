@@ -24,24 +24,22 @@ void ModbusService::begin(SharedState* sharedStateIn) {
   cwtConsecutiveFailures = 0UL;
   lastWeatherPollMs = 0UL;
   lastCwtPollMs = 0UL;
-  stateMutex.unlock();
-}
 
-void ModbusService::start() {
-  if (running.load() || sharedState == nullptr) {
-    return;
+  weatherDevice.reset();
+  for (uint8_t i = 0; i < kCwtSensorCount; i++) {
+    cwtDevices[i].reset();
   }
-  running.store(true);
+
+  stateMutex.unlock();
+
+  RS485.setDelays(200, 1500);
+
+  ModbusRTUClient.begin(9600, SERIAL_8N1);
+  ModbusRTUClient.setTimeout(200);
+
   workerThread.start(mbed::callback(this, &ModbusService::runThread));
 }
 
-void ModbusService::stop() {
-  if (!running.load()) {
-    return;
-  }
-  running.store(false);
-  workerThread.join();
-}
 
 bool ModbusService::hasFreshData(unsigned long nowMs) const {
   stateMutex.lock();
@@ -68,6 +66,55 @@ ModbusService::Health ModbusService::getHealth(unsigned long nowMs) const {
   return health;
 }
 
+ModbusService::WeatherLatestSnapshot ModbusService::getLatestWeather() const {
+  WeatherLatestSnapshot latest;
+  const unsigned long nowMs = millis();
+  stateMutex.lock();
+  latest.data = weatherDevice.getSnapshot();
+  latest.stale = !latest.data.valid || latest.data.lastUpdateMs == 0UL ||
+                 nowMs < latest.data.lastUpdateMs ||
+                 (nowMs - latest.data.lastUpdateMs) > SystemConfig::kWeatherFreshMaxAgeMs;
+  stateMutex.unlock();
+  return latest;
+}
+
+ModbusService::CwtLatestSnapshot ModbusService::getLatestCwt(uint8_t index) const {
+  CwtLatestSnapshot latest;
+  if (index >= kCwtSensorCount) {
+    return latest;
+  }
+
+  const unsigned long nowMs = millis();
+  stateMutex.lock();
+  latest.data = cwtDevices[index].getSnapshot();
+  latest.stale = !latest.data.valid || latest.data.lastUpdateMs == 0UL ||
+                 nowMs < latest.data.lastUpdateMs ||
+                 (nowMs - latest.data.lastUpdateMs) > SystemConfig::kCwtFreshMaxAgeMs;
+  stateMutex.unlock();
+  return latest;
+}
+
+ModbusService::ModbusSnapshot ModbusService::getLatestSnapshot() const {
+  ModbusSnapshot latest;
+  const unsigned long nowMs = millis();
+  stateMutex.lock();
+  latest.weather.data = weatherDevice.getSnapshot();
+  latest.weather.stale = !latest.weather.data.valid || latest.weather.data.lastUpdateMs == 0UL ||
+                         nowMs < latest.weather.data.lastUpdateMs ||
+                         (nowMs - latest.weather.data.lastUpdateMs) >
+                             SystemConfig::kWeatherFreshMaxAgeMs;
+
+  for (uint8_t i = 0; i < kCwtSensorCount; i++) {
+    latest.cwt[i].data = cwtDevices[i].getSnapshot();
+    latest.cwt[i].stale = !latest.cwt[i].data.valid || latest.cwt[i].data.lastUpdateMs == 0UL ||
+                          nowMs < latest.cwt[i].data.lastUpdateMs ||
+                          (nowMs - latest.cwt[i].data.lastUpdateMs) >
+                              SystemConfig::kCwtFreshMaxAgeMs;
+  }
+  stateMutex.unlock();
+  return latest;
+}
+
 bool ModbusService::isWeatherFreshLocked(unsigned long nowMs) const {
   if (lastWeatherSuccessMs == 0UL || nowMs < lastWeatherSuccessMs) {
     return false;
@@ -87,60 +134,25 @@ bool ModbusService::isDegradedLocked() const {
          cwtConsecutiveFailures >= SystemConfig::kModbusFailureDegradeThreshold;
 }
 
+void ModbusService::touchHeartbeat() {
+  stateMutex.lock();
+  lastLoopMs = millis();
+  stateMutex.unlock();
+}
+
 void ModbusService::runThread() {
   while (running.load()) {
+    touchHeartbeat();
     const unsigned long nowMs = millis();
-    stateMutex.lock();
-    lastLoopMs = nowMs;
-    stateMutex.unlock();
-    if (!ensureBusReady(nowMs)) {
-      rtos::ThisThread::sleep_for(SystemConfig::kModbusLoopSleepMs);
-      continue;
-    }
+    touchHeartbeat();
     readWeatherIfDue(nowMs);
+    touchHeartbeat();
     readCwtIfDue(nowMs);
+    touchHeartbeat();
     rtos::ThisThread::sleep_for(SystemConfig::kModbusLoopSleepMs);
   }
 }
 
-bool ModbusService::ensureBusReady(unsigned long nowMs) {
-  {
-    stateMutex.lock();
-    if (busReady) {
-      stateMutex.unlock();
-      return true;
-    }
-    if (nowMs - lastBusInitAttemptMs < 2000UL) {
-      stateMutex.unlock();
-      return false;
-    }
-    lastBusInitAttemptMs = nowMs;
-    stateMutex.unlock();
-  }
-
-#if defined(ARDUINO_ARCH_MBED)
-  RS485.begin(9600, SERIAL_8N1);
-#else
-  if (!RS485.begin(9600, SERIAL_8N1)) {
-    LoggerService::warn("ModbusService", "rs485_begin_failed");
-    return false;
-  }
-#endif
-  if (!ModbusRTUClient.begin(9600, SERIAL_8N1)) {
-    LoggerService::warn("ModbusService", "modbus_begin_failed");
-    return false;
-  }
-  ModbusRTUClient.setTimeout(200);
-
-  stateMutex.lock();
-  busReady = true;
-  if (!busReadyLogged) {
-    LoggerService::info("ModbusService", "bus_ready");
-    busReadyLogged = true;
-  }
-  stateMutex.unlock();
-  return true;
-}
 
 bool ModbusService::readHoldingRegisters(uint8_t slaveId,
                                          uint16_t startRegister,
@@ -149,15 +161,19 @@ bool ModbusService::readHoldingRegisters(uint8_t slaveId,
   if (outRegisters == nullptr || registerCount == 0U) {
     return false;
   }
+  touchHeartbeat();
   if (!ModbusRTUClient.requestFrom(slaveId, HOLDING_REGISTERS, startRegister,
                                    registerCount)) {
     return false;
   }
+  touchHeartbeat();
   for (uint16_t i = 0; i < registerCount; i++) {
+    touchHeartbeat();
     if (!ModbusRTUClient.available()) {
       return false;
     }
     outRegisters[i] = static_cast<uint16_t>(ModbusRTUClient.read());
+    touchHeartbeat();
   }
   return true;
 }
@@ -169,15 +185,19 @@ bool ModbusService::readInputRegisters(uint8_t slaveId,
   if (outRegisters == nullptr || registerCount == 0U) {
     return false;
   }
+  touchHeartbeat();
   if (!ModbusRTUClient.requestFrom(slaveId, INPUT_REGISTERS, startRegister,
                                    registerCount)) {
     return false;
   }
+  touchHeartbeat();
   for (uint16_t i = 0; i < registerCount; i++) {
+    touchHeartbeat();
     if (!ModbusRTUClient.available()) {
       return false;
     }
     outRegisters[i] = static_cast<uint16_t>(ModbusRTUClient.read());
+    touchHeartbeat();
   }
   return true;
 }
@@ -200,6 +220,7 @@ void ModbusService::readWeatherIfDue(unsigned long nowMs) {
     weatherConsecutiveFailures++;
     const bool shouldInvalidate =
         weatherConsecutiveFailures >= SystemConfig::kModbusFailureDegradeThreshold;
+    weatherDevice.markInvalid();
     stateMutex.unlock();
     if (shouldInvalidate) {
       sharedState->invalidateWeather();
@@ -207,6 +228,9 @@ void ModbusService::readWeatherIfDue(unsigned long nowMs) {
     return;
   }
 
+  stateMutex.lock();
+  weatherDevice.updateFromSnapshot(weather);
+  stateMutex.unlock();
   sharedState->updateWeather(weather);
   stateMutex.lock();
   lastWeatherSuccessMs = nowMs;
@@ -231,9 +255,15 @@ void ModbusService::readCwtIfDue(unsigned long nowMs) {
     }
     if (!ok) {
       failedAny = true;
+      stateMutex.lock();
+      cwtDevices[i].markInvalid();
+      stateMutex.unlock();
       sharedState->invalidateCwt(i);
       continue;
     }
+    stateMutex.lock();
+    cwtDevices[i].updateFromSnapshot(cwt);
+    stateMutex.unlock();
     sharedState->updateCwt(i, cwt);
     readAny = true;
   }
@@ -248,6 +278,11 @@ void ModbusService::readCwtIfDue(unsigned long nowMs) {
   }
   const bool shouldInvalidateAll =
       cwtConsecutiveFailures >= SystemConfig::kModbusFailureDegradeThreshold;
+  if (shouldInvalidateAll) {
+    for (uint8_t i = 0; i < kCwtSensorCount; i++) {
+      cwtDevices[i].markInvalid();
+    }
+  }
   stateMutex.unlock();
   if (shouldInvalidateAll) {
     sharedState->invalidateAllCwt();
@@ -269,15 +304,15 @@ bool ModbusService::readWeatherFromBus(WeatherSnapshot* out,
     return false;
   }
 
-  const int32_t windRaw =
-      (static_cast<int32_t>(regs[0]) << 16) | static_cast<int32_t>(regs[1]);
-  const int32_t rainRaw =
-      (static_cast<int32_t>(regs[6]) << 16) | static_cast<int32_t>(regs[7]);
-
-  out->valid = true;
-  out->windSpeedMps = static_cast<float>(windRaw) / 1000.0f;
-  out->rainDetected = (static_cast<float>(rainRaw) / 1000.0f) > 0.0f;
-  out->lastUpdateMs = nowMs;
+  stateMutex.lock();
+  const bool decoded = weatherDevice.updateFromRegisters(regs, 8U, nowMs);
+  if (decoded) {
+    *out = weatherDevice.getSnapshot();
+  }
+  stateMutex.unlock();
+  if (!decoded) {
+    return false;
+  }
   return true;
 }
 
@@ -299,10 +334,15 @@ bool ModbusService::readCwtFromBus(uint8_t sensorIndex,
     return false;
   }
 
-  out->valid = true;
-  out->rhPct = static_cast<float>(regs[0]) * 0.1f;
-  out->tempC = static_cast<float>(static_cast<int16_t>(regs[1])) * 0.1f;
-  out->lastUpdateMs = nowMs;
+  stateMutex.lock();
+  const bool decoded = cwtDevices[sensorIndex].updateFromRegisters(regs, 2U, nowMs);
+  if (decoded) {
+    *out = cwtDevices[sensorIndex].getSnapshot();
+  }
+  stateMutex.unlock();
+  if (!decoded) {
+    return false;
+  }
   return true;
 }
 

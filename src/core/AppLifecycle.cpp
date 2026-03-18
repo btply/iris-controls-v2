@@ -20,7 +20,6 @@ void AppLifecycle::begin() {
   modbusService.begin(&sharedState);
   mqttService.begin(&sharedState);
 
-  modbusService.start();
   mqttService.start();
 
   curtainService.start();

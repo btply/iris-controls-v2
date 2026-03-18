@@ -3,6 +3,8 @@
 #define MODBUS_SERVICE_H
 
 #include "../core/SharedState.h"
+#include "../devices/CwtDevice.h"
+#include "../devices/WeatherDevice.h"
 #include <atomic>
 #include <mbed.h>
 
@@ -21,6 +23,21 @@ class ModbusService {
     unsigned long cwtConsecutiveFailures = 0UL;
   };
 
+  struct WeatherLatestSnapshot {
+    WeatherSnapshot data;
+    bool stale = true;
+  };
+
+  struct CwtLatestSnapshot {
+    CwtSnapshot data;
+    bool stale = true;
+  };
+
+  struct ModbusSnapshot {
+    WeatherLatestSnapshot weather;
+    CwtLatestSnapshot cwt[SharedStateConfig::kCwtCount];
+  };
+
   void begin(SharedState* sharedStateIn);
 
   void start();
@@ -28,6 +45,9 @@ class ModbusService {
 
   bool hasFreshData(unsigned long nowMs) const;
   Health getHealth(unsigned long nowMs) const;
+  WeatherLatestSnapshot getLatestWeather() const;
+  CwtLatestSnapshot getLatestCwt(uint8_t index) const;
+  ModbusSnapshot getLatestSnapshot() const;
 
  private:
   static const uint8_t kCwtSensorCount = SharedStateConfig::kCwtCount;
@@ -47,6 +67,7 @@ class ModbusService {
                           uint16_t* outRegisters);
   void readWeatherIfDue(unsigned long nowMs);
   void readCwtIfDue(unsigned long nowMs);
+  void touchHeartbeat();
   bool isWeatherFreshLocked(unsigned long nowMs) const;
   bool isCwtFreshLocked(unsigned long nowMs) const;
   bool isDegradedLocked() const;
@@ -71,6 +92,8 @@ class ModbusService {
   unsigned long cwtConsecutiveFailures = 0UL;
   unsigned long lastWeatherPollMs = 0UL;
   unsigned long lastCwtPollMs = 0UL;
+  WeatherDevice weatherDevice;
+  CwtDevice cwtDevices[kCwtSensorCount];
 };
 
 #endif  // MODBUS_SERVICE_H

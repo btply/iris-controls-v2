@@ -385,6 +385,9 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_stats.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/Stream.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/FileLike.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../devices/CwtDevice.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../devices/../core/SharedState.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../devices/WeatherDevice.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../config/SystemConfig.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/LoggerService.h \
  /home/billy/Arduino/libraries/ArduinoModbus/src/ArduinoModbus.h \

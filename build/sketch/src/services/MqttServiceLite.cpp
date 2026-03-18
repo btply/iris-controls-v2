@@ -52,18 +52,27 @@ MqttService::Health MqttService::getHealth() const {
   return health;
 }
 
+void MqttService::touchHeartbeat() {
+  stateMutex.lock();
+  lastLoopMs = millis();
+  stateMutex.unlock();
+}
+
 void MqttService::runThread() {
   while (running.load()) {
+    touchHeartbeat();
     const unsigned long nowMs = millis();
-    stateMutex.lock();
-    lastLoopMs = nowMs;
-    stateMutex.unlock();
+    touchHeartbeat();
     serviceNetwork(nowMs);
+    touchHeartbeat();
     tryReconnect(nowMs);
 
     if (networkReady.load() && mqttClient.connected()) {
+      touchHeartbeat();
       mqttClient.loop();
+      touchHeartbeat();
       flushPendingTelemetry();
+      touchHeartbeat();
     }
 
     rtos::ThisThread::sleep_for(SystemConfig::kMqttLoopSleepMs);
@@ -71,12 +80,15 @@ void MqttService::runThread() {
 }
 
 void MqttService::initNetwork() {
+  touchHeartbeat();
   if (Ethernet.begin(SystemConfig::kEthernetMac) == 0) {
+    touchHeartbeat();
     networkReady.store(false);
     LoggerService::warn("Network", "dhcp_failed");
     return;
   }
 
+  touchHeartbeat();
   networkReady.store(true);
   LoggerService::info("Network", "dhcp_ready");
 }
@@ -91,7 +103,9 @@ void MqttService::serviceNetwork(unsigned long nowMs) {
     return;
   }
 
+  touchHeartbeat();
   const int maintainResult = Ethernet.maintain();
+  touchHeartbeat();
   switch (maintainResult) {
     case 0:
       return;
@@ -124,13 +138,16 @@ void MqttService::tryReconnect(unsigned long nowMs) {
   }
 
   lastReconnectAttemptMs = nowMs;
+  touchHeartbeat();
   if (mqttClient.connect(SystemConfig::kMqttClientId,
                          SystemConfig::kMqttUsername,
                          SystemConfig::kMqttPassword)) {
+    touchHeartbeat();
     LoggerService::info("MqttService", "connected");
     reconnectBackoffMs = SystemConfig::kMqttReconnectBackoffMinMs;
     return;
   }
+  touchHeartbeat();
 
   LoggerService::warn("MqttService", "connect_failed");
   stateMutex.lock();
@@ -164,14 +181,18 @@ void MqttService::flushPendingTelemetry() {
     return;
   }
 
+  touchHeartbeat();
   if (!mqttClient.publish(SystemConfig::kMqttTelemetryTopic, payload, false)) {
+    touchHeartbeat();
     LoggerService::warn("MqttService", "publish_failed");
     stateMutex.lock();
     publishFailures++;
     pendingTelemetry = telemetry;
     telemetryPending = true;
     stateMutex.unlock();
+    return;
   }
+  touchHeartbeat();
 }
 
 bool MqttService::buildTelemetryPayload(char* out,

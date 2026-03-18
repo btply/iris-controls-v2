@@ -23,7 +23,8 @@ static const unsigned long kWeatherPollIntervalMs = 10000UL;
 static const unsigned long kCwtPollIntervalMs = 5000UL;
 static const unsigned long kWeatherFreshMaxAgeMs = 30000UL;
 static const unsigned long kCwtFreshMaxAgeMs = 15000UL;
-static const unsigned long kServiceHeartbeatTimeoutMs = 5000UL;
+static const unsigned long kModbusServiceHeartbeatTimeoutMs = 3000UL;
+static const unsigned long kMqttServiceHeartbeatTimeoutMs = 3000UL;
 static const uint8_t kModbusFailureDegradeThreshold = 3U;
 
 static const float kVentOpenPosition = 0.65f;

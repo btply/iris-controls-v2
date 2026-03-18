@@ -13,13 +13,16 @@ void AppLifecycle::begin() {
 
   sharedState.reset();
   OptaController.begin();
+
   IoHal::begin();
+
   curtainService.begin();
 
   modbusService.begin(&sharedState);
   mqttService.begin(&sharedState);
-  modbusService.start();
+
   mqttService.start();
+
   curtainService.start();
   LoggerService::info("AppLifecycle", "services_started");
 
@@ -58,14 +61,14 @@ void AppLifecycle::updateSupervisor(unsigned long nowMs) {
   if (lastModbusHealth.lastLoopMs == 0UL) {
     modbusWatchdogFault = true;
   } else {
-    modbusWatchdogFault =
-        nowMs - lastModbusHealth.lastLoopMs > SystemConfig::kServiceHeartbeatTimeoutMs;
+    modbusWatchdogFault = nowMs - lastModbusHealth.lastLoopMs >
+                          SystemConfig::kModbusServiceHeartbeatTimeoutMs;
   }
   if (lastMqttHealth.lastLoopMs == 0UL) {
     mqttWatchdogFault = true;
   } else {
-    mqttWatchdogFault =
-        nowMs - lastMqttHealth.lastLoopMs > SystemConfig::kServiceHeartbeatTimeoutMs;
+    mqttWatchdogFault = nowMs - lastMqttHealth.lastLoopMs >
+                        SystemConfig::kMqttServiceHeartbeatTimeoutMs;
   }
 
   if (modbusWatchdogFault && !modbusWatchdogFaultLogged) {
@@ -136,13 +139,21 @@ void AppLifecycle::runControlTick(unsigned long nowMs) {
 
 void AppLifecycle::runTelemetryTick(unsigned long nowMs) {
   const TelemetrySnapshot telemetry = sharedState.copyTelemetry(nowMs);
+  const ModbusService::ModbusSnapshot modbusSnapshot = modbusService.getLatestSnapshot();
   const IoHal::Status ioStatus = IoHal::getStatus();
+  bool allCwtFresh = true;
+  for (uint8_t i = 0; i < SharedStateConfig::kCwtCount; i++) {
+    if (modbusSnapshot.cwt[i].stale) {
+      allCwtFresh = false;
+      break;
+    }
+  }
 
   MqttService::RuntimeStatus runtimeStatus;
   runtimeStatus.supervisorState = static_cast<uint8_t>(supervisorState);
   runtimeStatus.controlEnabled = controlEnabled;
-  runtimeStatus.modbusWeatherFresh = lastModbusHealth.weatherFresh;
-  runtimeStatus.modbusCwtFresh = lastModbusHealth.cwtFresh;
+  runtimeStatus.modbusWeatherFresh = !modbusSnapshot.weather.stale;
+  runtimeStatus.modbusCwtFresh = allCwtFresh;
   runtimeStatus.modbusDegraded = lastModbusHealth.degraded || modbusWatchdogFault;
   runtimeStatus.modbusWatchdogFault = modbusWatchdogFault;
   runtimeStatus.modbusLastLoopMs = lastModbusHealth.lastLoopMs;

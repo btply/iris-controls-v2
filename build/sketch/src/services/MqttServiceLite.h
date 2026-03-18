@@ -51,6 +51,7 @@ class MqttService {
   void initNetwork();
   void serviceNetwork(unsigned long nowMs);
   void tryReconnect(unsigned long nowMs);
+  void touchHeartbeat();
   void flushPendingTelemetry();
   bool buildTelemetryPayload(char* out,
                              size_t outSize,
