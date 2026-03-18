@@ -9,9 +9,10 @@ static const unsigned long kControlTickIntervalMs = 2000UL;
 static const unsigned long kTelemetryIntervalMs = 30000UL;
 
 static const unsigned long kModbusLoopSleepMs = 20UL;
-static const unsigned long kModbusInterRequestDelayMs = 10UL;
-static const unsigned long kModbusResponseTimeoutMs = 400UL;
+static const unsigned long kModbusInterRequestDelayMs = 100UL;
+static const unsigned long kModbusResponseTimeoutMs = 500UL;
 static const bool kModbusLogSuccessfulReads = true;
+
 static const unsigned long kMqttLoopSleepMs = 20UL;
 static const unsigned long kCurtainLoopSleepMs = 20UL;
 static const unsigned long kCurtainOpenSliceMs = 10UL;
@@ -21,12 +22,12 @@ static const float kCurtainEmergencyCloseEpsilon = 0.001f;
 static const unsigned long kMqttReconnectBackoffMinMs = 1000UL;
 static const unsigned long kMqttReconnectBackoffMaxMs = 30000UL;
 
-static const unsigned long kWeatherPollIntervalMs = 10000UL;
+static const unsigned long kWeatherPollIntervalMs = 5000UL;
 static const unsigned long kCwtPollIntervalMs = 5000UL;
 static const unsigned long kWeatherFreshMaxAgeMs = 30000UL;
 static const unsigned long kCwtFreshMaxAgeMs = 15000UL;
 static const unsigned long kModbusServiceHeartbeatTimeoutMs = 3000UL;
-static const unsigned long kMqttServiceHeartbeatTimeoutMs = 3000UL;
+static const unsigned long kMqttServiceHeartbeatTimeoutMs = 5000UL;
 static const uint8_t kModbusFailureDegradeThreshold = 3U;
 
 static const float kVentOpenPosition = 0.65f;
