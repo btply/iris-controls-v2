@@ -29,26 +29,26 @@ void AppLifecycle::begin() {
     LoggerService::error("AppLifecycle", "register_weather_failed");
   }
 
+  for (uint8_t i = 0; i < AppDataConfig::kCwtCount; i++) {
+    devices.cwt[i].reset();
+  }
+
   struct CwtPollConfig {
     uint8_t index;
     uint8_t slaveId;
-    unsigned long pollIntervalMs;
   };
 
-  static const CwtPollConfig kCwtPollConfig[AppDataConfig::kCwtCount] = {
-      {0U, 1U, SystemConfig::kCwtPollIntervalMs},
-      {1U, 2U, SystemConfig::kCwtPollIntervalMs},
-      {2U, 3U, SystemConfig::kCwtPollIntervalMs},
-      {3U, 4U, SystemConfig::kCwtPollIntervalMs},
+  // Commissioned CWT sensors currently on bus: slave IDs 2 and 3.
+  static const CwtPollConfig kCommissionedCwt[] = {
+      {0U, 2U},
+      {1U, 3U},
   };
 
-  for (uint8_t i = 0; i < AppDataConfig::kCwtCount; i++) {
-    const CwtPollConfig& config = kCwtPollConfig[i];
+  for (const CwtPollConfig& config : kCommissionedCwt) {
     devices.cwt[config.index].setSlaveId(config.slaveId);
-    devices.cwt[config.index].reset();
     if (!modbusService.registerDevice(devices.cwt[config.index],
                                       ModbusService::DeviceRole::Cwt,
-                                      config.pollIntervalMs,
+                                      SystemConfig::kCwtPollIntervalMs,
                                       config.index)) {
       LoggerService::printf(LoggerService::Level::Error,
                             "AppLifecycle",

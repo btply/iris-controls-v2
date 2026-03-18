@@ -10,10 +10,11 @@
 void ModbusService::begin() {
   stateMutex.lock();
   pollEntryCount = 0U;
+  pollCursor = 0U;
   busReady = false;
   busReadyLogged = false;
   lastBusInitAttemptMs = 0UL;
-  lastLoopMs = 0UL;
+  lastLoopMs.store(0UL);
   totalReadFailures = 0UL;
   weatherConsecutiveFailures = 0UL;
   cwtConsecutiveFailures = 0UL;
@@ -50,11 +51,16 @@ bool ModbusService::registerDevice(IModbusDevice& device,
   }
 
   PollEntry& entry = pollEntries[pollEntryCount];
+  const uint8_t slot = pollEntryCount;
+  const unsigned long nowMs = millis();
+  const unsigned long phaseSliceMs =
+      (pollIntervalMs > kMaxDevices) ? (pollIntervalMs / kMaxDevices) : 0UL;
+  const unsigned long phaseOffsetMs = phaseSliceMs * slot;
   entry.device = &device;
   entry.role = role;
   entry.deviceIndex = deviceIndex;
   entry.pollIntervalMs = pollIntervalMs;
-  entry.lastPollMs = 0UL;
+  entry.lastPollMs = nowMs - pollIntervalMs + phaseOffsetMs;
   pollEntryCount++;
   stateMutex.unlock();
   return true;
@@ -84,7 +90,7 @@ ModbusService::Health ModbusService::getHealth() const {
   Health health;
   stateMutex.lock();
   health.busReady = busReady;
-  health.lastLoopMs = lastLoopMs;
+  health.lastLoopMs = lastLoopMs.load();
   health.totalReadFailures = totalReadFailures;
   health.weatherConsecutiveFailures = weatherConsecutiveFailures;
   health.cwtConsecutiveFailures = cwtConsecutiveFailures;
@@ -99,9 +105,7 @@ bool ModbusService::isDegradedLocked() const {
 }
 
 void ModbusService::touchHeartbeat() {
-  stateMutex.lock();
-  lastLoopMs = millis();
-  stateMutex.unlock();
+  lastLoopMs.store(millis());
 }
 
 void ModbusService::runThread() {
@@ -147,13 +151,17 @@ bool ModbusService::ensureBusReady(unsigned long nowMs) {
   touchHeartbeat();
   ModbusRTUClient.setTimeout(200);
 
+  bool shouldLogReady = false;
   stateMutex.lock();
   busReady = true;
   if (!busReadyLogged) {
-    LoggerService::info("ModbusService", "bus_ready");
     busReadyLogged = true;
+    shouldLogReady = true;
   }
   stateMutex.unlock();
+  if (shouldLogReady) {
+    LoggerService::info("ModbusService", "bus_ready");
+  }
   return true;
 }
 
@@ -256,22 +264,27 @@ void ModbusService::recordPollFailure(DeviceRole role) {
 
 void ModbusService::pollDevices(unsigned long nowMs) {
   uint8_t count = 0U;
+  uint8_t startCursor = 0U;
   stateMutex.lock();
   count = pollEntryCount;
+  startCursor = pollCursor;
   stateMutex.unlock();
+  if (count == 0U) {
+    return;
+  }
 
-  for (uint8_t i = 0; i < count; i++) {
+  for (uint8_t offset = 0; offset < count; offset++) {
+    const uint8_t i = static_cast<uint8_t>((startCursor + offset) % count);
     PollEntry localEntry;
+    bool due = false;
     stateMutex.lock();
     localEntry = pollEntries[i];
-    if (nowMs - localEntry.lastPollMs < localEntry.pollIntervalMs) {
-      stateMutex.unlock();
-      continue;
+    if (localEntry.device != nullptr &&
+        (nowMs - localEntry.lastPollMs) >= localEntry.pollIntervalMs) {
+      due = true;
     }
-    pollEntries[i].lastPollMs = nowMs;
     stateMutex.unlock();
-
-    if (localEntry.device == nullptr) {
+    if (!due) {
       continue;
     }
 
@@ -301,39 +314,42 @@ void ModbusService::pollDevices(unsigned long nowMs) {
                             static_cast<unsigned int>(readConfig.startRegister),
                             static_cast<unsigned int>(readConfig.registerCount),
                             lastError);
+      localEntry.device->markInvalid();
+      recordPollFailure(localEntry.role);
+      stateMutex.lock();
+      if (i < pollEntryCount) {
+        pollEntries[i].lastPollMs = nowMs;
+      }
+      pollCursor = static_cast<uint8_t>((i + 1U) % count);
+      stateMutex.unlock();
+      touchHeartbeat();
+      rtos::ThisThread::sleep_for(SystemConfig::kModbusInterRequestDelayMs);
+      return;
+    }
+
+    if (SystemConfig::kModbusLogSuccessfulReads) {
       if (localEntry.role == DeviceRole::Weather) {
-        LoggerService::printf(LoggerService::Level::Warn,
+        LoggerService::printf(LoggerService::Level::Info,
                               "ModbusService",
-                              "read_fail_weather_s%u",
+                              "read_ok_weather_s%u",
                               static_cast<unsigned int>(readConfig.slaveId));
       } else {
-        LoggerService::printf(LoggerService::Level::Warn,
+        LoggerService::printf(LoggerService::Level::Info,
                               "ModbusService",
-                              "read_fail_cwt%u_s%u",
+                              "read_ok_cwt%u_s%u",
                               static_cast<unsigned int>(localEntry.deviceIndex),
                               static_cast<unsigned int>(readConfig.slaveId));
       }
-      localEntry.device->markInvalid();
-      recordPollFailure(localEntry.role);
-      touchHeartbeat();
-      rtos::ThisThread::sleep_for(SystemConfig::kModbusInterRequestDelayMs);
-      continue;
-    }
-
-    if (localEntry.role == DeviceRole::Weather) {
-      LoggerService::printf(LoggerService::Level::Info,
-                            "ModbusService",
-                            "read_ok_weather_s%u",
-                            static_cast<unsigned int>(readConfig.slaveId));
-    } else {
-      LoggerService::printf(LoggerService::Level::Info,
-                            "ModbusService",
-                            "read_ok_cwt%u_s%u",
-                            static_cast<unsigned int>(localEntry.deviceIndex),
-                            static_cast<unsigned int>(readConfig.slaveId));
     }
     recordPollSuccess(localEntry.role);
+    stateMutex.lock();
+    if (i < pollEntryCount) {
+      pollEntries[i].lastPollMs = nowMs;
+    }
+    pollCursor = static_cast<uint8_t>((i + 1U) % count);
+    stateMutex.unlock();
     touchHeartbeat();
     rtos::ThisThread::sleep_for(SystemConfig::kModbusInterRequestDelayMs);
+    return;
   }
 }

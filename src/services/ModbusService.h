@@ -63,13 +63,14 @@ class ModbusService {
 
   rtos::Thread workerThread;
   std::atomic<bool> running{false};
+  std::atomic<unsigned long> lastLoopMs{0UL};
   mutable rtos::Mutex stateMutex;
   PollEntry pollEntries[kMaxDevices];
   uint8_t pollEntryCount = 0U;
+  uint8_t pollCursor = 0U;
   bool busReady = false;
   bool busReadyLogged = false;
   unsigned long lastBusInitAttemptMs = 0UL;
-  unsigned long lastLoopMs = 0UL;
   unsigned long totalReadFailures = 0UL;
   unsigned long weatherConsecutiveFailures = 0UL;
   unsigned long cwtConsecutiveFailures = 0UL;
