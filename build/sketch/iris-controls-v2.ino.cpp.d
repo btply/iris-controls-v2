@@ -397,6 +397,7 @@
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../control/CurtainController.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../core/AppDataTypes.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/ModbusService.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../config/SystemConfig.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../devices/IModbusDevice.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/MqttServiceLite.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/Ethernet.h \

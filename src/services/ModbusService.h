@@ -1,6 +1,7 @@
 #ifndef MODBUS_SERVICE_H
 #define MODBUS_SERVICE_H
 
+#include "../config/SystemConfig.h"
 #include "../devices/IModbusDevice.h"
 #include <atomic>
 #include <mbed.h>
@@ -61,7 +62,7 @@ class ModbusService {
   void touchHeartbeat();
   bool isDegradedLocked() const;
 
-  rtos::Thread workerThread;
+  rtos::Thread workerThread{osPriorityNormal, SystemConfig::kModbusThreadStackSize};
   std::atomic<bool> running{false};
   std::atomic<unsigned long> lastLoopMs{0UL};
   mutable rtos::Mutex stateMutex;

@@ -11,6 +11,7 @@ static const unsigned long kTelemetryIntervalMs = 30000UL;
 static const unsigned long kModbusLoopSleepMs = 20UL;
 static const unsigned long kModbusInterRequestDelayMs = 100UL;
 static const unsigned long kModbusResponseTimeoutMs = 500UL;
+static const uint32_t kModbusThreadStackSize = 4096U;
 static const bool kModbusLogSuccessfulReads = true;
 
 static const unsigned long kMqttLoopSleepMs = 20UL;
