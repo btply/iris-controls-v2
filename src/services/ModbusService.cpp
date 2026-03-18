@@ -140,7 +140,7 @@ bool ModbusService::ensureBusReady(unsigned long nowMs) {
 
   touchHeartbeat();
 
-  RS485.setDelays(200, 200);
+  RS485.setDelays(1250, 1250);
 
   touchHeartbeat();
   if (!ModbusRTUClient.begin(9600, SERIAL_8N1)) {
