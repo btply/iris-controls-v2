@@ -314,6 +314,8 @@ void ModbusService::pollDevices(unsigned long nowMs) {
       }
       localEntry.device->markInvalid();
       recordPollFailure(localEntry.role);
+      touchHeartbeat();
+      rtos::ThisThread::sleep_for(SystemConfig::kModbusInterRequestDelayMs);
       continue;
     }
 
@@ -331,5 +333,6 @@ void ModbusService::pollDevices(unsigned long nowMs) {
     }
     recordPollSuccess(localEntry.role);
     touchHeartbeat();
+    rtos::ThisThread::sleep_for(SystemConfig::kModbusInterRequestDelayMs);
   }
 }
