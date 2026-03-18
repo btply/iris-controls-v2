@@ -140,10 +140,10 @@ bool ModbusService::ensureBusReady(unsigned long nowMs) {
 
   touchHeartbeat();
 
-  RS485.setDelays(3646, 3646);
+  RS485.setDelays(1250, 1250);
 
   touchHeartbeat();
-  if (!ModbusRTUClient.begin(9600, SERIAL_8N1)) {
+  if (!ModbusRTUClient.begin(RS485, 9600, SERIAL_8N1)) {
     LoggerService::enqueue(LoggerService::Level::Warn, "ModbusService", "modbus_begin_failed");
     return false;
   }
