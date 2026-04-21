@@ -180,6 +180,7 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/overloads.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/AppLifecycle.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../config/SystemConfig.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../config/Secrets.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../control/MinimalClimatePlanner.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../control/../core/AppDataTypes.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/DeviceRegistry.h \
@@ -399,7 +400,7 @@
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/ModbusService.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../config/SystemConfig.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../devices/IModbusDevice.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/MqttServiceLite.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/MqttService.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/Ethernet.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/SocketHelpers.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/EthernetInterface.h \

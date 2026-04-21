@@ -387,5 +387,6 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/Stream.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/FileLike.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../config/SystemConfig.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../config/Secrets.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/../hal/IoHalLite.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/LoggerService.h

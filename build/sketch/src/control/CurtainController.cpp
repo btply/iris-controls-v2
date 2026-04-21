@@ -15,51 +15,15 @@ CurtainController::CurtainController(uint8_t curtainIdIn) : curtainId(curtainIdI
 void CurtainController::begin() {
   current = 0.0f;
   target = 0.0f;
-  emergencyClosed = false;
   motorEnabled = false;
-  lastTickMs = 0UL;
   stopMotor();
 }
 
-void CurtainController::tick(unsigned long nowMs) {
-  if (lastTickMs == 0UL) {
-    lastTickMs = nowMs;
-    return;
-  }
-
-  const unsigned long deltaMs = nowMs - lastTickMs;
-  lastTickMs = nowMs;
-  const float maxStep = (static_cast<float>(deltaMs) / 1000.0f) * 0.20f;
-
-  if (current < target) {
-    if (setMotorOutput(MotorDirection::Opening)) {
-      current += maxStep;
-      if (current > target) {
-        current = target;
-      }
-    }
-  } else if (current > target) {
-    if (setMotorOutput(MotorDirection::Closing)) {
-      current -= maxStep;
-      if (current < target) {
-        current = target;
-      }
-    }
-  } else {
-    stopMotor();
-  }
-  current = clamp01(current);
-}
-
 void CurtainController::setTarget(float targetPositionIn) {
-  if (emergencyClosed && targetPositionIn > 0.0f) {
-    emergencyClosed = false;
-  }
   target = clamp01(targetPositionIn);
 }
 
 void CurtainController::emergencyClose() {
-  emergencyClosed = true;
   target = 0.0f;
 }
 
@@ -69,10 +33,6 @@ float CurtainController::currentPosition() const {
 
 float CurtainController::targetPosition() const {
   return target;
-}
-
-bool CurtainController::isEmergencyClosed() const {
-  return emergencyClosed;
 }
 
 bool CurtainController::applyOpen() {
@@ -137,11 +97,10 @@ bool CurtainController::setMotorOutput(MotorDirection direction) {
   if (IoHal::writeOutput(outputChannel, true, true)) {
     motorEnabled = true;
     return true;
-  } else {
-    motorEnabled = false;
-    LoggerService::warn("CurtainController", "output_enable_failed");
-    return false;
   }
+  motorEnabled = false;
+  LoggerService::warn("CurtainController", "output_enable_failed");
+  return false;
 }
 
 void CurtainController::stopMotor() {

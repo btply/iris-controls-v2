@@ -1,15 +1,5 @@
 /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/AppLifecycle.cpp.o: \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/AppLifecycle.cpp \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/AppLifecycle.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../config/SystemConfig.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../control/MinimalClimatePlanner.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../control/../core/AppDataTypes.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/DeviceRegistry.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/AppDataTypes.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/../devices/CwtDevice.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/../devices/IModbusDevice.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/../devices/../core/AppDataTypes.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/Arduino.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/pinmode_arduino.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/mbed_config.h \
@@ -137,7 +127,6 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/Compat.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/pins_arduino.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/macros.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/Arduino.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/targets/TARGET_STM/TARGET_STM32H7/TARGET_STM32H747xI/TARGET_OPTA/PinNames.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/FileHandle.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/Callback.h \
@@ -185,32 +174,64 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/targets/TARGET_STM/TARGET_STM32H7/objects.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/Serial.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/RingBuffer.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/Arduino.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/HardwareSerial.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/timer.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/overloads.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/mbed.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_version.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/mbed_config.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/rtos.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/internal/mbed_rtos_storage.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/rtos/include/mbed_rtx_storage.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Include/rtx_os.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaBlue.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/AnalogExpansion.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/AnalogCommonCfg.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/AnalogExpansionAddress.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/AnalogExpansionCfg.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaAnalogProtocol.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaBlueProtocol.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaMsgCommon.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaExpansion.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/ExpansionOperations.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaBluePrintCfg.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaControllerCfg.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaModuleProtocol.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/DigitalExpansion.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/DigitalCommonCfg.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/DigitalExpansionsAddresses.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaController.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaCrc.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Wire/Wire.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/HardwareI2C.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/deprecated/Print.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/I2C.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/gpio_api.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/pinmap.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/i2c_api.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/buffer.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/dma_api.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/SingletonPtr.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_atomic.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/internal/mbed_atomic_impl.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/Include/cmsis_os2.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/PlatformMutex.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Mutex.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/mbed_rtos_types.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/internal/mbed_rtos1_types.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Include1/cmsis_os.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Include/rtx_os.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Include/rtx_def.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/RTE/include/RTE_Components.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/rtos/include/mbed_rtx_conf.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/targets/TARGET_STM/mbed_rtx.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/mbed_cmsis_conf.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Config/RTX_Config.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/internal/mbed_rtos_storage.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/rtos/include/mbed_rtx_storage.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/device/rtos/include/mbed_rtx_conf.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Kernel.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/mbed_rtos_types.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Thread.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/internal/mbed_rtos1_types.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/cmsis/CMSIS_5/CMSIS/RTOS2/RTX/Include1/cmsis_os.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Semaphore.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Mutex.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/ScopedLock.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/CThunk.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/internal/CThunkBase.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/I2CSlave.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/rtos.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Thread.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Semaphore.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/ThisThread.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Mail.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/Queue.h \
@@ -218,6 +239,27 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/MemoryPool.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/EventFlags.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/ConditionVariable.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaDigitalProtocol.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/DigitalMechExpansion.h \
+ /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/DigitalStSolidExpansion.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/Watchdog.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_critical.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/watchdog_api.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/AppLifecycle.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../config/SystemConfig.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../config/Secrets.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../control/MinimalClimatePlanner.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../control/../core/AppDataTypes.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/DeviceRegistry.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/AppDataTypes.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/../devices/CwtDevice.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/../devices/IModbusDevice.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../core/../devices/../core/AppDataTypes.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/mbed.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_version.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/mbed_config.h \
+ /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/rtos.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/nsapi.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/nsapi_types.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_toolchain.h \
@@ -236,11 +278,7 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/UDPSocket.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/InternetSocket.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_atomic.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/internal/mbed_atomic_impl.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/SocketStats.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/SingletonPtr.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_atomic.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/PlatformMutex.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/SocketAddress.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/ticker_api.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/InternetDatagramSocket.h \
@@ -308,8 +346,6 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_debug.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/DigitalIn.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/interfaces/InterfaceDigitalIn.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/gpio_api.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/pinmap.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/DigitalOut.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/interfaces/InterfaceDigitalOut.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/DigitalInOut.h \
@@ -329,18 +365,10 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/pwmout_api.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/SPIMaster.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/spi_api.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/dma_api.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/buffer.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/CThunk.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/internal/CThunkBase.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/CircularBuffer.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/mbed_critical.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/Span.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/platform/include/platform/Transaction.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/SPISlave.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/I2C.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/i2c_api.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/I2CSlave.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/CAN.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/interfaces/InterfaceCAN.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/can_helper.h \
@@ -358,8 +386,6 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/crc_api.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/QSPI.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/qspi_api.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/Watchdog.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/watchdog_api.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/ResetReason.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/hal/include/hal/reset_reason_api.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/drivers/include/drivers/HighResClock.h \
@@ -399,7 +425,7 @@
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/ModbusService.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../config/SystemConfig.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/../devices/IModbusDevice.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/MqttServiceLite.h \
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/MqttService.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/Ethernet.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/SocketHelpers.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/EthernetInterface.h \
@@ -419,7 +445,6 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/Client.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/TLSSocket.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/connectivity/netsocket/include/netsocket/TCPSocket.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/mbed/rtos/include/rtos/rtos.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/EthernetServer.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/SocketWrapper/src/MbedServer.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Ethernet/src/EthernetUdp.h \
@@ -429,28 +454,4 @@
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/deprecated/Client.h \
  /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/deprecated/Stream.h \
  /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../hal/IoHalLite.h \
- /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/LoggerService.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaBlue.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/AnalogExpansion.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/AnalogCommonCfg.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/AnalogExpansionAddress.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/AnalogExpansionCfg.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaAnalogProtocol.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaBlueProtocol.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaMsgCommon.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaExpansion.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/ExpansionOperations.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaBluePrintCfg.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaControllerCfg.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaModuleProtocol.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/DigitalExpansion.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/DigitalCommonCfg.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/DigitalExpansionsAddresses.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaController.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaCrc.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/libraries/Wire/Wire.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/HardwareI2C.h \
- /home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/deprecated/Print.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/OptaDigitalProtocol.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/DigitalMechExpansion.h \
- /home/billy/Arduino/libraries/Arduino_Opta_Blueprint/src/DigitalStSolidExpansion.h
+ /home/billy/Documents/Code/iris-controls-v2/build/sketch/src/core/../services/LoggerService.h

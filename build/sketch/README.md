@@ -8,10 +8,14 @@ Lightweight greenhouse control firmware skeleton focused on:
 - Curtain control
 - MQTT telemetry
 
+## Secrets
+
+Copy `src/config/Secrets.h.example` to `src/config/Secrets.h` and set `IRIS_MQTT_PASSWORD` (see `.gitignore`).
+
 ## Design Rules
 
 - Keep modules small and readable.
-- Keep lock scope short (`LockGuard<Mutex>` around data copy only).
+- Keep lock scope short (`mbed::ScopedLock<rtos::Mutex>` around data copy only).
 - Keep command intent in lifecycle; curtain motion executes in its own service thread.
 - Keep transport loops in dedicated service threads.
 

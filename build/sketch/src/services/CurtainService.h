@@ -26,16 +26,8 @@ class CurtainService {
 
  private:
   void runThread();
-  void onCurtainTimeout(uint8_t index);
-  void armCurtainTimeout(uint8_t index, unsigned long runMs);
-  void disarmAllCurtainTimeouts();
 
-  void onCurtainTimeout0();
-  void onCurtainTimeout1();
-  void onCurtainTimeout2();
-  void onCurtainTimeout3();
-
-  rtos::Thread workerThread;
+  rtos::Thread workerThread{osPriorityNormal, 4096, nullptr, "curtain"};
   std::atomic<bool> running{false};
 
   mutable rtos::Mutex commandMutex;
@@ -49,8 +41,6 @@ class CurtainService {
   CurtainController controllers[AppDataConfig::kCurtainCount] = {
       CurtainController(0), CurtainController(1), CurtainController(2),
       CurtainController(3)};
-
-  mbed::Timeout movementTimeouts[AppDataConfig::kCurtainCount];
 };
 
 #endif  // CURTAIN_SERVICE_H

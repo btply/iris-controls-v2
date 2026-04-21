@@ -1,32 +1,20 @@
 #include "ModbusService.h"
 
 #include "../config/SystemConfig.h"
+#include "../core/DeviceRegistry.h"
+#include "../core/AppDataTypes.h"
+#include "../devices/ModbusCommissioningTable.h"
 #include "LoggerService.h"
 #include <Arduino.h>
 #include <ArduinoModbus.h>
 #include <ArduinoRS485.h>
+#include <chrono>
+#include <mbed.h>
 
-void ModbusService::begin() {
-  stateMutex.lock();
-  pollEntryCount = 0U;
-  pollCursor = 0U;
-  busReady = false;
-  busReadyLogged = false;
-  lastBusInitAttemptMs = 0UL;
-  lastLoopMs.store(0UL);
-  totalReadFailures = 0UL;
-  weatherConsecutiveFailures = 0UL;
-  cwtConsecutiveFailures = 0UL;
-  for (uint8_t i = 0; i < kMaxDevices; i++) {
-    pollEntries[i] = PollEntry{};
-  }
-  stateMutex.unlock();
-}
-
-bool ModbusService::registerDevice(IModbusDevice& device,
-                                   DeviceRole role,
-                                   unsigned long pollIntervalMs,
-                                   uint8_t deviceIndex) {
+bool ModbusService::addPollEntry(IModbusDevice& device,
+                                 DeviceRole role,
+                                 unsigned long pollIntervalMs,
+                                 uint8_t deviceIndex) {
   if (pollIntervalMs == 0UL) {
     return false;
   }
@@ -43,9 +31,8 @@ bool ModbusService::registerDevice(IModbusDevice& device,
     return false;
   }
 
-  stateMutex.lock();
+  mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
   if (pollEntryCount >= kMaxDevices) {
-    stateMutex.unlock();
     return false;
   }
 
@@ -60,41 +47,147 @@ bool ModbusService::registerDevice(IModbusDevice& device,
   entry.deviceIndex = deviceIndex;
   entry.pollIntervalMs = pollIntervalMs;
   entry.lastPollMs = nowMs - pollIntervalMs + phaseOffsetMs;
+  entry.consecutiveReadFailures = 0U;
   pollEntryCount++;
-  stateMutex.unlock();
   return true;
 }
 
-void ModbusService::start() {
-  if (running.load()) {
+void ModbusService::tryBusReset(unsigned long nowMs) {
+  if (nowMs - lastBusResetMs < SystemConfig::kModbusBusResetMinIntervalMs) {
     return;
   }
-  running.store(true);
-  const osStatus status = workerThread.start(mbed::callback(this, &ModbusService::runThread));
-  if (status != osOK) {
-    running.store(false);
-    LoggerService::enqueue(LoggerService::Level::Error, "ModbusService", "thread_start_failed");
+  lastBusResetMs = nowMs;
+  LoggerService::enqueue(LoggerService::Level::Warn, "ModbusService", "bus_reset_attempt");
+  ModbusRTUClient.end();
+  rtos::ThisThread::sleep_for(std::chrono::milliseconds(50));
+  const bool ok = ModbusRTUClient.begin(RS485, 9600, SERIAL_8N1);
+  if (!ok) {
+    LoggerService::enqueue(LoggerService::Level::Error, "ModbusService", "bus_reset_begin_failed");
+    {
+      mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+      busReady = false;
+    }
+    return;
   }
+  RS485.setDelays(SystemConfig::kRs485PreDelayUs, SystemConfig::kRs485PostDelayUs);
+  ModbusRTUClient.setTimeout(SystemConfig::kModbusResponseTimeoutMs);
+  {
+    mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+    busReady = true;
+  }
+  LoggerService::enqueue(LoggerService::Level::Info, "ModbusService", "bus_reset_ok");
 }
 
-void ModbusService::stop() {
-  if (!running.load()) {
+void ModbusService::begin(DeviceRegistry& registry) {
+  if (threadStarted) {
     return;
   }
-  running.store(false);
-  workerThread.join();
+
+  {
+    mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+    pollEntryCount = 0U;
+    pollCursor = 0U;
+    for (uint8_t i = 0; i < kMaxDevices; i++) {
+      pollEntries[i] = PollEntry{};
+    }
+    totalReadFailures = 0UL;
+    weatherConsecutiveFailures = 0UL;
+    cwtConsecutiveFailures = 0UL;
+    lastBusResetMs = 0UL;
+    lastLoopMs.store(millis());
+  }
+
+  using ModbusCommissioning::Entry;
+  using ModbusCommissioning::Kind;
+  using ModbusCommissioning::kEntries;
+  using ModbusCommissioning::kEntryCount;
+
+  if (SystemConfig::kSkipWeatherPolling) {
+    LoggerService::enqueue(LoggerService::Level::Info, "ModbusService", "weather_polling_disabled");
+  }
+
+  for (size_t e = 0; e < kEntryCount; e++) {
+    const Entry& row = kEntries[e];
+    if (row.kind == Kind::Weather) {
+      registry.weather.reset();
+      if (SystemConfig::kSkipWeatherPolling) {
+        continue;
+      }
+      if (!addPollEntry(registry.weather,
+                        DeviceRole::Weather,
+                        SystemConfig::kWeatherPollIntervalMs,
+                        0U)) {
+        LoggerService::enqueue(LoggerService::Level::Error, "ModbusService", "register_weather_failed");
+      } else {
+        LoggerService::enqueue(LoggerService::Level::Info, "ModbusService", "registered_weather");
+      }
+      continue;
+    }
+    if (row.kind == Kind::Cwt) {
+      if (row.cwtSlotIndex >= AppDataConfig::kCwtCount) {
+        LoggerService::enqueuePrintf(LoggerService::Level::Error,
+                                     "ModbusService",
+                                     "commission_cwt_slot_oob idx=%u",
+                                     static_cast<unsigned int>(row.cwtSlotIndex));
+        continue;
+      }
+      registry.cwt[row.cwtSlotIndex].setSlaveId(row.slaveId);
+      registry.cwt[row.cwtSlotIndex].reset();
+      if (!addPollEntry(registry.cwt[row.cwtSlotIndex],
+                        DeviceRole::Cwt,
+                        SystemConfig::kCwtPollIntervalMs,
+                        row.cwtSlotIndex)) {
+        LoggerService::enqueuePrintf(LoggerService::Level::Error,
+                                     "ModbusService",
+                                     "register_cwt%u_failed",
+                                     static_cast<unsigned int>(row.cwtSlotIndex));
+      }
+    }
+  }
+
+  const bool ok = ModbusRTUClient.begin(RS485, 9600, SERIAL_8N1);
+
+  if (!ok) {
+    LoggerService::enqueue(LoggerService::Level::Warn, "ModbusService", "modbus_begin_failed");
+    {
+      mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+      busReady = false;
+    }
+    return;
+  }
+
+  RS485.setDelays(SystemConfig::kRs485PreDelayUs, SystemConfig::kRs485PostDelayUs);
+  ModbusRTUClient.setTimeout(SystemConfig::kModbusResponseTimeoutMs);
+  LoggerService::enqueue(LoggerService::Level::Info, "ModbusService", "bus_ready");
+
+  {
+    mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+    busReady = true;
+  }
+
+  const osStatus status = workerThread.start(mbed::callback(this, &ModbusService::runThread));
+  if (status != osOK) {
+    {
+      mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+      busReady = false;
+    }
+    LoggerService::enqueue(LoggerService::Level::Error, "ModbusService", "thread_start_failed");
+    return;
+  }
+
+  threadStarted = true;
 }
 
 ModbusService::Health ModbusService::getHealth() const {
   Health health;
-  stateMutex.lock();
+  mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
   health.busReady = busReady;
+  health.pollThreadRunning = threadStarted;
   health.lastLoopMs = lastLoopMs.load();
   health.totalReadFailures = totalReadFailures;
   health.weatherConsecutiveFailures = weatherConsecutiveFailures;
   health.cwtConsecutiveFailures = cwtConsecutiveFailures;
   health.degraded = isDegradedLocked();
-  stateMutex.unlock();
   return health;
 }
 
@@ -108,112 +201,80 @@ void ModbusService::touchHeartbeat() {
 }
 
 void ModbusService::runThread() {
-  while (running.load()) {
+  while (true) {
     touchHeartbeat();
     const unsigned long nowMs = millis();
-    if (!ensureBusReady(nowMs)) {
-      touchHeartbeat();
-      rtos::ThisThread::sleep_for(SystemConfig::kModbusLoopSleepMs);
-      continue;
-    }
-    touchHeartbeat();
     pollDevices(nowMs);
     touchHeartbeat();
-    rtos::ThisThread::sleep_for(SystemConfig::kModbusLoopSleepMs);
+    rtos::ThisThread::sleep_for(std::chrono::milliseconds(SystemConfig::kModbusLoopSleepMs));
   }
 }
 
-bool ModbusService::ensureBusReady(unsigned long nowMs) {
-  {
-    stateMutex.lock();
-    if (busReady) {
-      stateMutex.unlock();
+bool ModbusService::readRegistersByKind(ModbusRegisterKind kind,
+                                        uint8_t slaveId,
+                                        uint16_t startRegister,
+                                        uint16_t registerCount,
+                                        uint16_t* outRegisters) {
+  if (outRegisters == nullptr || registerCount == 0U) {
+    return false;
+  }
+
+  const int registerTable =
+      (kind == ModbusRegisterKind::Input) ? INPUT_REGISTERS : HOLDING_REGISTERS;
+
+  touchHeartbeat();
+  const int responseCount =
+      ModbusRTUClient.requestFrom(slaveId, registerTable, startRegister, registerCount);
+  if (responseCount != static_cast<int>(registerCount)) {
+    return false;
+  }
+  touchHeartbeat();
+  for (uint16_t i = 0; i < registerCount; i++) {
+    touchHeartbeat();
+    if (!ModbusRTUClient.available()) {
+      return false;
+    }
+    const long v = ModbusRTUClient.read();
+    if (v < 0) {
+      return false;
+    }
+    outRegisters[i] = static_cast<uint16_t>(v);
+    touchHeartbeat();
+  }
+  return true;
+}
+
+bool ModbusService::readRegistersWithRetry(const ModbusReadConfig& config,
+                                           uint16_t* outRegisters,
+                                           int* diagResponseCount,
+                                           int* diagAvailableCount) {
+  const uint8_t maxAttempts =
+      static_cast<uint8_t>(1U + static_cast<unsigned int>(SystemConfig::kModbusReadRetries));
+  for (uint8_t attempt = 0U; attempt < maxAttempts; attempt++) {
+    if (attempt > 0U) {
+      rtos::ThisThread::sleep_for(std::chrono::milliseconds(SystemConfig::kModbusRetryDelayMs));
+    }
+    if (readRegisters(config, outRegisters)) {
       return true;
     }
-    if (nowMs - lastBusInitAttemptMs < 2000UL) {
-      stateMutex.unlock();
-      return false;
-    }
-    lastBusInitAttemptMs = nowMs;
-    stateMutex.unlock();
+    touchHeartbeat();
   }
-
+  const int registerTable =
+      (config.registerKind == ModbusRegisterKind::Input) ? INPUT_REGISTERS : HOLDING_REGISTERS;
   touchHeartbeat();
-
-  RS485.setDelays(1250, 1750);
-
-  touchHeartbeat();
-  if (!ModbusRTUClient.begin(RS485, 9600, SERIAL_8N1)) {
-    LoggerService::enqueue(LoggerService::Level::Warn, "ModbusService", "modbus_begin_failed");
-    return false;
+  const int resp =
+      ModbusRTUClient.requestFrom(config.slaveId, registerTable,
+                                  config.startRegister, config.registerCount);
+  if (diagResponseCount != nullptr) {
+    *diagResponseCount = resp;
   }
-  touchHeartbeat();
-  ModbusRTUClient.setTimeout(SystemConfig::kModbusResponseTimeoutMs);
-
-  bool shouldLogReady = false;
-  stateMutex.lock();
-  busReady = true;
-  if (!busReadyLogged) {
-    busReadyLogged = true;
-    shouldLogReady = true;
+  if (diagAvailableCount != nullptr) {
+    *diagAvailableCount = static_cast<int>(ModbusRTUClient.available());
   }
-  stateMutex.unlock();
-  if (shouldLogReady) {
-    LoggerService::enqueue(LoggerService::Level::Info, "ModbusService", "bus_ready");
-  }
-  return true;
+  return false;
 }
 
-bool ModbusService::readHoldingRegisters(uint8_t slaveId,
-                                         uint16_t startRegister,
-                                         uint16_t registerCount,
-                                         uint16_t* outRegisters) {
-  if (outRegisters == nullptr || registerCount == 0U) {
-    return false;
-  }
-  touchHeartbeat();
-  if (!ModbusRTUClient.requestFrom(slaveId, HOLDING_REGISTERS, startRegister,
-                                   registerCount)) {
-    return false;
-  }
-  touchHeartbeat();
-  for (uint16_t i = 0; i < registerCount; i++) {
-    touchHeartbeat();
-    if (!ModbusRTUClient.available()) {
-      return false;
-    }
-    outRegisters[i] = static_cast<uint16_t>(ModbusRTUClient.read());
-    touchHeartbeat();
-  }
-  return true;
-}
-
-bool ModbusService::readInputRegisters(uint8_t slaveId,
-                                       uint16_t startRegister,
-                                       uint16_t registerCount,
-                                       uint16_t* outRegisters) {
-  if (outRegisters == nullptr || registerCount == 0U) {
-    return false;
-  }
-  touchHeartbeat();
-  if (!ModbusRTUClient.requestFrom(slaveId, INPUT_REGISTERS, startRegister,
-                                   registerCount)) {
-    return false;
-  }
-  touchHeartbeat();
-  for (uint16_t i = 0; i < registerCount; i++) {
-    touchHeartbeat();
-    if (!ModbusRTUClient.available()) {
-      return false;
-    }
-    outRegisters[i] = static_cast<uint16_t>(ModbusRTUClient.read());
-    touchHeartbeat();
-  }
-  return true;
-}
-
-bool ModbusService::readRegisters(const ModbusReadConfig& config,
-                                  uint16_t* outRegisters) {
+bool ModbusService::readRegisters(const ModbusReadConfig& config, uint16_t* outRegisters) {
   if (outRegisters == nullptr) {
     return false;
   }
@@ -224,50 +285,44 @@ bool ModbusService::readRegisters(const ModbusReadConfig& config,
     return false;
   }
   const uint32_t endRegister = static_cast<uint32_t>(config.startRegister) +
-                               static_cast<uint32_t>(config.registerCount) - 1UL;
+                             static_cast<uint32_t>(config.registerCount) - 1UL;
   if (endRegister > 0xFFFFUL) {
     return false;
   }
-  if (config.registerKind == ModbusRegisterKind::Input) {
-    return readInputRegisters(config.slaveId,
-                              config.startRegister,
-                              config.registerCount,
-                              outRegisters);
-  }
-  return readHoldingRegisters(config.slaveId,
-                              config.startRegister,
-                              config.registerCount,
-                              outRegisters);
+  return readRegistersByKind(config.registerKind,
+                             config.slaveId,
+                             config.startRegister,
+                             config.registerCount,
+                             outRegisters);
 }
 
 void ModbusService::recordPollSuccess(DeviceRole role) {
-  stateMutex.lock();
+  mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
   if (role == DeviceRole::Weather) {
     weatherConsecutiveFailures = 0UL;
   } else {
     cwtConsecutiveFailures = 0UL;
   }
-  stateMutex.unlock();
 }
 
 void ModbusService::recordPollFailure(DeviceRole role) {
-  stateMutex.lock();
+  mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
   totalReadFailures++;
   if (role == DeviceRole::Weather) {
     weatherConsecutiveFailures++;
   } else {
     cwtConsecutiveFailures++;
   }
-  stateMutex.unlock();
 }
 
 void ModbusService::pollDevices(unsigned long nowMs) {
   uint8_t count = 0U;
   uint8_t startCursor = 0U;
-  stateMutex.lock();
-  count = pollEntryCount;
-  startCursor = pollCursor;
-  stateMutex.unlock();
+  {
+    mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+    count = pollEntryCount;
+    startCursor = pollCursor;
+  }
   if (count == 0U) {
     return;
   }
@@ -276,20 +331,23 @@ void ModbusService::pollDevices(unsigned long nowMs) {
     const uint8_t i = static_cast<uint8_t>((startCursor + offset) % count);
     PollEntry localEntry;
     bool due = false;
-    stateMutex.lock();
-    localEntry = pollEntries[i];
-    if (localEntry.device != nullptr &&
-        (nowMs - localEntry.lastPollMs) >= localEntry.pollIntervalMs) {
-      due = true;
+    {
+      mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+      localEntry = pollEntries[i];
+      if (localEntry.device != nullptr &&
+          (nowMs - localEntry.lastPollMs) >= localEntry.pollIntervalMs) {
+        due = true;
+      }
     }
-    stateMutex.unlock();
     if (!due) {
       continue;
     }
 
     const ModbusReadConfig readConfig = localEntry.device->getReadConfig();
     uint16_t regs[kMaxRegistersPerPoll] = {};
-    bool ok = readRegisters(readConfig, regs);
+    int diagResp = -1;
+    int diagAvail = -1;
+    bool ok = readRegistersWithRetry(readConfig, regs, &diagResp, &diagAvail);
     if (ok) {
       ok = localEntry.device->updateFromRegisters(regs, readConfig.registerCount, nowMs);
     }
@@ -305,25 +363,55 @@ void ModbusService::pollDevices(unsigned long nowMs) {
       }
       LoggerService::enqueuePrintf(LoggerService::Level::Warn,
                                    "ModbusService",
-                                   "read_fail_diag role=%s idx=%u sid=%u tbl=%c reg=0x%04X cnt=%u err=%s",
+                                   "read_fail_diag role=%s idx=%u sid=%u tbl=%c reg=0x%04X cnt=%u "
+                                   "resp=%d avail=%d err=%s",
                                    roleLabel,
                                    static_cast<unsigned int>(localEntry.deviceIndex),
                                    static_cast<unsigned int>(readConfig.slaveId),
                                    tableCode,
                                    static_cast<unsigned int>(readConfig.startRegister),
                                    static_cast<unsigned int>(readConfig.registerCount),
+                                   diagResp,
+                                   diagAvail,
                                    lastError);
+
+      {
+        uint8_t cf = 0U;
+        {
+          mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+          if (i < pollEntryCount) {
+            pollEntries[i].consecutiveReadFailures++;
+            cf = pollEntries[i].consecutiveReadFailures;
+          }
+        }
+        if (cf >= SystemConfig::kModbusBusResetFailureThreshold) {
+          tryBusReset(nowMs);
+          mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+          if (i < pollEntryCount) {
+            pollEntries[i].consecutiveReadFailures = 0U;
+          }
+        }
+      }
+
       localEntry.device->markInvalid();
       recordPollFailure(localEntry.role);
-      stateMutex.lock();
-      if (i < pollEntryCount) {
-        pollEntries[i].lastPollMs = nowMs;
+      {
+        mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+        if (i < pollEntryCount) {
+          pollEntries[i].lastPollMs = nowMs;
+        }
+        pollCursor = static_cast<uint8_t>((i + 1U) % count);
       }
-      pollCursor = static_cast<uint8_t>((i + 1U) % count);
-      stateMutex.unlock();
       touchHeartbeat();
-      rtos::ThisThread::sleep_for(SystemConfig::kModbusInterRequestDelayMs);
+      rtos::ThisThread::sleep_for(std::chrono::milliseconds(SystemConfig::kModbusInterRequestDelayMs));
       return;
+    }
+
+    {
+      mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+      if (i < pollEntryCount) {
+        pollEntries[i].consecutiveReadFailures = 0U;
+      }
     }
 
     if (SystemConfig::kModbusLogSuccessfulReads) {
@@ -341,14 +429,15 @@ void ModbusService::pollDevices(unsigned long nowMs) {
       }
     }
     recordPollSuccess(localEntry.role);
-    stateMutex.lock();
-    if (i < pollEntryCount) {
-      pollEntries[i].lastPollMs = nowMs;
+    {
+      mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+      if (i < pollEntryCount) {
+        pollEntries[i].lastPollMs = nowMs;
+      }
+      pollCursor = static_cast<uint8_t>((i + 1U) % count);
     }
-    pollCursor = static_cast<uint8_t>((i + 1U) % count);
-    stateMutex.unlock();
     touchHeartbeat();
-    rtos::ThisThread::sleep_for(SystemConfig::kModbusInterRequestDelayMs);
+    rtos::ThisThread::sleep_for(std::chrono::milliseconds(SystemConfig::kModbusInterRequestDelayMs));
     return;
   }
 }

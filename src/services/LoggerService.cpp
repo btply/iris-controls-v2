@@ -53,10 +53,9 @@ void LoggerService::vprintf(Level level,
 }
 
 void LoggerService::enqueue(Level level, const char* module, const char* message) {
-  logRingMutex.lock();
+  mbed::ScopedLock<rtos::Mutex> lock(logRingMutex);
   const size_t nextTail = (logRingTail + 1U) % kLogRingSize;
   if (nextTail == logRingHead) {
-    logRingMutex.unlock();
     return;
   }
   LogEntry& e = logRing[logRingTail];
@@ -66,13 +65,10 @@ void LoggerService::enqueue(Level level, const char* module, const char* message
   snprintf(e.message, kLogMessageLen, "%s", message != nullptr ? message : "");
   e.message[kLogMessageLen - 1U] = '\0';
   logRingTail = nextTail;
-  logRingMutex.unlock();
 }
 
 void LoggerService::enqueuePrintf(Level level, const char* module, const char* fmt, ...) {
-  static char formatBuf[256];
-  static rtos::Mutex formatMutex;
-  formatMutex.lock();
+  char formatBuf[256];
   va_list args;
   va_start(args, fmt);
   const int written = vsnprintf(formatBuf, sizeof(formatBuf), fmt, args);
@@ -80,19 +76,19 @@ void LoggerService::enqueuePrintf(Level level, const char* module, const char* f
   formatBuf[sizeof(formatBuf) - 1U] = '\0';
   const char* msg = (written >= 0) ? formatBuf : "format_error";
   enqueue(level, module, msg);
-  formatMutex.unlock();
 }
 
 void LoggerService::drain() {
   static const size_t kDrainMax = kLogRingSize;
   LogEntry drained[kDrainMax];
   size_t drainedCount = 0U;
-  logRingMutex.lock();
-  while (logRingHead != logRingTail && drainedCount < kDrainMax) {
-    drained[drainedCount++] = logRing[logRingHead];
-    logRingHead = (logRingHead + 1U) % kLogRingSize;
+  {
+    mbed::ScopedLock<rtos::Mutex> lock(logRingMutex);
+    while (logRingHead != logRingTail && drainedCount < kDrainMax) {
+      drained[drainedCount++] = logRing[logRingHead];
+      logRingHead = (logRingHead + 1U) % kLogRingSize;
+    }
   }
-  logRingMutex.unlock();
   for (size_t i = 0U; i < drainedCount; i++) {
     writeLine(drained[i].level, drained[i].module, drained[i].message);
   }

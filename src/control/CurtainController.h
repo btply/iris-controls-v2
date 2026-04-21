@@ -8,7 +8,6 @@ class CurtainController {
   explicit CurtainController(uint8_t curtainIdIn);
 
   void begin();
-  void tick(unsigned long nowMs);
 
   void setTarget(float targetPositionIn);
   void emergencyClose();
@@ -24,7 +23,6 @@ class CurtainController {
 
   float currentPosition() const;
   float targetPosition() const;
-  bool isEmergencyClosed() const;
   uint8_t getOutputChannel() const;
 
  private:
@@ -44,9 +42,7 @@ class CurtainController {
   bool outputChannelValid = false;
   float current = 0.0f;
   float target = 0.0f;
-  bool emergencyClosed = false;
   bool motorEnabled = false;
-  unsigned long lastTickMs = 0UL;
 };
 
 #endif  // CURTAIN_CONTROLLER_H

@@ -775,9 +775,9 @@
   },
   {
     "compile": {
-      "source_path": "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/MqttServiceLite.cpp",
-      "object_path": "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/MqttServiceLite.cpp.o",
-      "depfile_path": "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/MqttServiceLite.cpp.d"
+      "source_path": "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/MqttService.cpp",
+      "object_path": "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/MqttService.cpp.o",
+      "depfile_path": "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/MqttService.cpp.d"
     },
     "compile_task": {
       "args": [
@@ -817,7 +817,7 @@
         "-I/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino/api/deprecated-avr-comp",
         "-iprefix/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/cores/arduino",
         "@/home/billy/.arduino15/packages/arduino/hardware/mbed_opta/4.5.0/variants/OPTA/../OPTA/includes.txt",
-        "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/MqttServiceLite.cpp",
+        "/home/billy/Documents/Code/iris-controls-v2/build/sketch/src/services/MqttService.cpp",
         "-o",
         "/dev/null"
       ]

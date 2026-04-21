@@ -1,15 +1,22 @@
 #line 1 "/home/billy/Documents/Code/iris-controls-v2/src/core/AppLifecycle.cpp"
-#include "AppLifecycle.h"
-
-#include "../hal/IoHalLite.h"
-#include "../services/LoggerService.h"
 #include <Arduino.h>
 #include <OptaBlue.h>
+#include <drivers/Watchdog.h>
+
+#include "AppLifecycle.h"
+#include "../config/SystemConfig.h"
+#include "../hal/IoHalLite.h"
+#include "../services/LoggerService.h"
+
 #include <array>
+#include <chrono>
+#include <mbed.h>
 
 void AppLifecycle::begin() {
   LoggerService::begin(115200UL, 1500UL);
   LoggerService::info("AppLifecycle", "startup");
+
+  mbed::Watchdog::get_instance().start(8000);
 
   OptaController.begin();
 
@@ -17,47 +24,14 @@ void AppLifecycle::begin() {
 
   curtainService.begin();
 
-  modbusService.begin();
   mqttService.begin();
-
-  devices.weather.reset();
-  if (!modbusService.registerDevice(
-          devices.weather,
-          ModbusService::DeviceRole::Weather,
-          SystemConfig::kWeatherPollIntervalMs,
-          0U)) {
-    LoggerService::error("AppLifecycle", "register_weather_failed");
-  }
 
   for (uint8_t i = 0; i < AppDataConfig::kCwtCount; i++) {
     devices.cwt[i].reset();
   }
+  devices.weather.reset();
 
-  struct CwtPollConfig {
-    uint8_t index;
-    uint8_t slaveId;
-  };
-
-  // Commissioned CWT sensors currently on bus: slave IDs 2 and 3.
-  static const CwtPollConfig kCommissionedCwt[] = {
-      {0U, 2U},
-      {1U, 3U},
-  };
-
-  for (const CwtPollConfig& config : kCommissionedCwt) {
-    devices.cwt[config.index].setSlaveId(config.slaveId);
-    if (!modbusService.registerDevice(devices.cwt[config.index],
-                                      ModbusService::DeviceRole::Cwt,
-                                      SystemConfig::kCwtPollIntervalMs,
-                                      config.index)) {
-      LoggerService::printf(LoggerService::Level::Error,
-                            "AppLifecycle",
-                            "register_cwt%u_failed",
-                            static_cast<unsigned int>(config.index));
-    }
-  }
-
-  modbusService.start();
+  modbusService.begin(devices);
   mqttService.start();
 
   curtainService.start();
@@ -81,6 +55,7 @@ void AppLifecycle::tick() {
 
   IoHal::update();
   updateSupervisor(nowMs);
+  mbed::Watchdog::get_instance().kick();
 
   if (nowMs - lastControlTickMs >= SystemConfig::kControlTickIntervalMs) {
     runControlTick(nowMs);
@@ -92,13 +67,16 @@ void AppLifecycle::tick() {
     lastTelemetryTickMs = nowMs;
   }
 
+  rtos::ThisThread::sleep_for(std::chrono::milliseconds(5));
 }
 
 void AppLifecycle::updateSupervisor(unsigned long nowMs) {
   lastModbusHealth = modbusService.getHealth();
   lastMqttHealth = mqttService.getHealth();
 
-  if (lastModbusHealth.lastLoopMs == 0UL) {
+  if (!lastModbusHealth.pollThreadRunning) {
+    modbusWatchdogFault = false;
+  } else if (lastModbusHealth.lastLoopMs == 0UL) {
     modbusWatchdogFault = true;
   } else {
     modbusWatchdogFault = nowMs - lastModbusHealth.lastLoopMs >
@@ -126,7 +104,9 @@ void AppLifecycle::updateSupervisor(unsigned long nowMs) {
     mqttWatchdogFaultLogged = false;
   }
 
-  const bool weatherFresh = devices.weather.isFresh(nowMs, SystemConfig::kWeatherFreshMaxAgeMs);
+  const bool weatherOk =
+      SystemConfig::kSkipWeatherPolling ||
+      devices.weather.isFresh(nowMs, SystemConfig::kWeatherFreshMaxAgeMs);
   bool allCwtFresh = true;
   for (uint8_t i = 0; i < AppDataConfig::kCwtCount; i++) {
     if (!devices.cwt[i].isFresh(nowMs, SystemConfig::kCwtFreshMaxAgeMs)) {
@@ -134,7 +114,7 @@ void AppLifecycle::updateSupervisor(unsigned long nowMs) {
       break;
     }
   }
-  const bool hasFreshData = weatherFresh && allCwtFresh;
+  const bool hasFreshData = weatherOk && allCwtFresh;
   const bool hasServiceFaults =
       modbusWatchdogFault || mqttWatchdogFault || lastModbusHealth.degraded;
 
@@ -163,6 +143,8 @@ void AppLifecycle::updateSupervisor(unsigned long nowMs) {
 }
 
 void AppLifecycle::runControlTick(unsigned long nowMs) {
+  lastPlan = curtainService.getPlanSnapshot();
+
   PlannerInput plannerInput;
   plannerInput.nowMs = nowMs;
   plannerInput.weather = devices.weather.getSnapshot();
@@ -202,7 +184,6 @@ void AppLifecycle::runControlTick(unsigned long nowMs) {
     targets = {0.0f, 0.0f, 0.0f, 0.0f};
   }
   curtainService.setTargets(targets, intent.emergencyClose);
-  lastPlan = curtainService.getPlanSnapshot();
 }
 
 void AppLifecycle::runTelemetryTick(unsigned long nowMs) {
@@ -228,6 +209,7 @@ void AppLifecycle::runTelemetryTick(unsigned long nowMs) {
   runtimeStatus.supervisorState = static_cast<uint8_t>(supervisorState);
   runtimeStatus.controlEnabled = controlEnabled;
   runtimeStatus.modbusWeatherFresh =
+      SystemConfig::kSkipWeatherPolling ||
       devices.weather.isFresh(nowMs, SystemConfig::kWeatherFreshMaxAgeMs);
   runtimeStatus.modbusCwtFresh = allCwtFresh;
   runtimeStatus.modbusDegraded = lastModbusHealth.degraded || modbusWatchdogFault;

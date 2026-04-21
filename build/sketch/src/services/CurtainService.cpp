@@ -6,75 +6,24 @@
 #include "LoggerService.h"
 #include <Arduino.h>
 #include <chrono>
-
-void CurtainService::onCurtainTimeout(uint8_t index) {
-  if (index >= AppDataConfig::kCurtainCount) {
-    return;
-  }
-  const uint8_t ch = controllers[index].getOutputChannel();
-  // Accepted tradeoff for now: direct best-effort cutoff in timeout callback.
-  // This keeps stop latency tight before first flash across current hardware setup.
-  (void)IoHal::writeOutput(ch, false, false);
-}
-
-void CurtainService::onCurtainTimeout0() { onCurtainTimeout(0); }
-void CurtainService::onCurtainTimeout1() { onCurtainTimeout(1); }
-void CurtainService::onCurtainTimeout2() { onCurtainTimeout(2); }
-void CurtainService::onCurtainTimeout3() { onCurtainTimeout(3); }
-
-void CurtainService::armCurtainTimeout(uint8_t index, unsigned long runMs) {
-  if (index >= AppDataConfig::kCurtainCount || runMs == 0UL) {
-    return;
-  }
-  movementTimeouts[index].detach();
-  switch (index) {
-    case 0:
-      movementTimeouts[0].attach(
-          mbed::callback(this, &CurtainService::onCurtainTimeout0),
-          std::chrono::milliseconds(runMs));
-      break;
-    case 1:
-      movementTimeouts[1].attach(
-          mbed::callback(this, &CurtainService::onCurtainTimeout1),
-          std::chrono::milliseconds(runMs));
-      break;
-    case 2:
-      movementTimeouts[2].attach(
-          mbed::callback(this, &CurtainService::onCurtainTimeout2),
-          std::chrono::milliseconds(runMs));
-      break;
-    case 3:
-      movementTimeouts[3].attach(
-          mbed::callback(this, &CurtainService::onCurtainTimeout3),
-          std::chrono::milliseconds(runMs));
-      break;
-    default:
-      break;
-  }
-}
-
-void CurtainService::disarmAllCurtainTimeouts() {
-  for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
-    movementTimeouts[i].detach();
-  }
-}
+#include <mbed.h>
 
 void CurtainService::begin() {
-  disarmAllCurtainTimeouts();
   for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
     controllers[i].begin();
   }
 
-  commandMutex.lock();
-  desiredTargets = {0.0f, 0.0f, 0.0f, 0.0f};
-  desiredEmergencyClose = false;
-  commandMutex.unlock();
-
-  stateMutex.lock();
-  currentPlan = CurtainPlan();
-  currentPlan.valid = true;
-  lastLoopMs = 0UL;
-  stateMutex.unlock();
+  {
+    mbed::ScopedLock<rtos::Mutex> lock(commandMutex);
+    desiredTargets = {0.0f, 0.0f, 0.0f, 0.0f};
+    desiredEmergencyClose = false;
+  }
+  {
+    mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+    currentPlan = CurtainPlan();
+    currentPlan.valid = true;
+    lastLoopMs = 0UL;
+  }
 }
 
 void CurtainService::start() {
@@ -82,7 +31,11 @@ void CurtainService::start() {
     return;
   }
   running.store(true);
-  workerThread.start(mbed::callback(this, &CurtainService::runThread));
+  const osStatus st = workerThread.start(mbed::callback(this, &CurtainService::runThread));
+  if (st != osOK) {
+    running.store(false);
+    LoggerService::enqueue(LoggerService::Level::Error, "CurtainService", "thread_start_failed");
+  }
 }
 
 void CurtainService::stop() {
@@ -96,26 +49,23 @@ void CurtainService::stop() {
 void CurtainService::setTargets(
     const std::array<float, AppDataConfig::kCurtainCount>& targets,
     bool emergencyClose) {
-  commandMutex.lock();
-  desiredTargets = targets;
-  desiredEmergencyClose = emergencyClose;
-  commandMutex.unlock();
+  {
+    mbed::ScopedLock<rtos::Mutex> lock(commandMutex);
+    desiredTargets = targets;
+    desiredEmergencyClose = emergencyClose;
+  }
 }
 
 CurtainPlan CurtainService::getPlanSnapshot() const {
-  CurtainPlan plan;
-  stateMutex.lock();
-  plan = currentPlan;
-  stateMutex.unlock();
-  return plan;
+  mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+  return currentPlan;
 }
 
 CurtainService::Health CurtainService::getHealth() const {
   Health health;
-  stateMutex.lock();
+  mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
   health.running = running.load();
   health.lastLoopMs = lastLoopMs;
-  stateMutex.unlock();
   return health;
 }
 
@@ -130,10 +80,11 @@ void CurtainService::runThread() {
 
     std::array<float, AppDataConfig::kCurtainCount> localTargets;
     bool localEmergencyClose = false;
-    commandMutex.lock();
-    localTargets = desiredTargets;
-    localEmergencyClose = desiredEmergencyClose;
-    commandMutex.unlock();
+    {
+      mbed::ScopedLock<rtos::Mutex> lock(commandMutex);
+      localTargets = desiredTargets;
+      localEmergencyClose = desiredEmergencyClose;
+    }
 
     for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
       if (localEmergencyClose) {
@@ -143,14 +94,10 @@ void CurtainService::runThread() {
       }
     }
 
-    std::array<bool, AppDataConfig::kCurtainCount> wantOpen = {false, false, false,
-                                                                    false};
-    std::array<bool, AppDataConfig::kCurtainCount> wantClose = {false, false, false,
-                                                                     false};
-    std::array<bool, AppDataConfig::kCurtainCount> ranOpen = {false, false, false,
-                                                                   false};
-    std::array<bool, AppDataConfig::kCurtainCount> ranClose = {false, false, false,
-                                                                    false};
+    std::array<bool, AppDataConfig::kCurtainCount> wantOpen = {false, false, false, false};
+    std::array<bool, AppDataConfig::kCurtainCount> wantClose = {false, false, false, false};
+    std::array<bool, AppDataConfig::kCurtainCount> ranOpen = {false, false, false, false};
+    std::array<bool, AppDataConfig::kCurtainCount> ranClose = {false, false, false, false};
 
     bool anyNeedOpen = false;
     bool anyNeedClose = false;
@@ -170,10 +117,14 @@ void CurtainService::runThread() {
       for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
         if (wantOpen[i] && controllers[i].applyOpen()) {
           ranOpen[i] = true;
-          armCurtainTimeout(i, openSliceMs);
         }
       }
-      rtos::ThisThread::sleep_for(openSliceMs);
+      rtos::ThisThread::sleep_for(std::chrono::milliseconds(openSliceMs));
+      for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
+        if (ranOpen[i]) {
+          controllers[i].stop();
+        }
+      }
       if (!IoHal::isAnyOutputEnabled()) {
         IoHal::writeSharedSignalLevel(false, false);
       }
@@ -188,10 +139,14 @@ void CurtainService::runThread() {
       for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
         if (wantClose[i] && controllers[i].applyClose()) {
           ranClose[i] = true;
-          armCurtainTimeout(i, closeSliceMs);
         }
       }
-      rtos::ThisThread::sleep_for(closeSliceMs);
+      rtos::ThisThread::sleep_for(std::chrono::milliseconds(closeSliceMs));
+      for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
+        if (ranClose[i]) {
+          controllers[i].stop();
+        }
+      }
       if (!IoHal::isAnyOutputEnabled()) {
         IoHal::writeSharedSignalLevel(false, false);
       }
@@ -209,19 +164,20 @@ void CurtainService::runThread() {
       localPlan.targetByCurtain[i] = controllers[i].targetPosition();
     }
 
-    stateMutex.lock();
-    currentPlan = localPlan;
-    lastLoopMs = nowMs;
-    stateMutex.unlock();
+    {
+      mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+      currentPlan = localPlan;
+      lastLoopMs = nowMs;
+    }
 
     const unsigned long elapsed =
         (anyNeedOpen ? openSliceMs : 0UL) + (anyNeedClose ? closeSliceMs : 0UL);
     if (SystemConfig::kCurtainLoopSleepMs > elapsed) {
-      rtos::ThisThread::sleep_for(SystemConfig::kCurtainLoopSleepMs - elapsed);
+      rtos::ThisThread::sleep_for(
+          std::chrono::milliseconds(SystemConfig::kCurtainLoopSleepMs - elapsed));
     }
   }
 
-  disarmAllCurtainTimeouts();
   for (uint8_t i = 0; i < AppDataConfig::kCurtainCount; i++) {
     controllers[i].stop();
   }

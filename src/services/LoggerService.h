@@ -33,7 +33,7 @@ class LoggerService {
   static const char* levelTag(Level level);
   static void writeLine(Level level, const char* module, const char* message);
 
-  static const size_t kLogRingSize = 8U;
+  static const size_t kLogRingSize = 32U;
   static const size_t kLogModuleLen = 24U;
   static const size_t kLogMessageLen = 128U;
 

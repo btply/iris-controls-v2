@@ -2,6 +2,7 @@
 #ifndef SYSTEM_CONFIG_H
 #define SYSTEM_CONFIG_H
 
+#include "Secrets.h"
 #include <stdint.h>
 
 namespace SystemConfig {
@@ -14,11 +15,19 @@ static const unsigned long kModbusInterRequestDelayMs = 100UL;
 static const unsigned long kModbusResponseTimeoutMs = 500UL;
 static const uint32_t kModbusThreadStackSize = 4096U;
 static const bool kModbusLogSuccessfulReads = true;
+/** 3.5 char times @ 9600 8N1 ≈ 3645 µs; applied after ModbusRTUClient.begin (begin overwrites prior setDelays). */
+static const unsigned long kRs485PreDelayUs = 3500UL;
+static const unsigned long kRs485PostDelayUs = 3500UL;
+static const uint8_t kModbusReadRetries = 1U;
+static const unsigned long kModbusRetryDelayMs = 15UL;
+static const bool kSkipWeatherPolling = true;
+static const uint8_t kModbusBusResetFailureThreshold = 5U;
+static const unsigned long kModbusBusResetMinIntervalMs = 30000UL;
 
 static const unsigned long kMqttLoopSleepMs = 20UL;
-static const unsigned long kCurtainLoopSleepMs = 20UL;
-static const unsigned long kCurtainOpenSliceMs = 10UL;
-static const unsigned long kCurtainCloseSliceMs = 10UL;
+static const unsigned long kCurtainLoopSleepMs = 100UL;
+static const unsigned long kCurtainOpenSliceMs = 500UL;
+static const unsigned long kCurtainCloseSliceMs = 500UL;
 static const float kCurtainPositionDeadband = 0.02f;
 static const float kCurtainEmergencyCloseEpsilon = 0.001f;
 static const unsigned long kMqttReconnectBackoffMinMs = 1000UL;
@@ -28,7 +37,7 @@ static const unsigned long kWeatherPollIntervalMs = 5000UL;
 static const unsigned long kCwtPollIntervalMs = 5000UL;
 static const unsigned long kWeatherFreshMaxAgeMs = 30000UL;
 static const unsigned long kCwtFreshMaxAgeMs = 15000UL;
-static const unsigned long kModbusServiceHeartbeatTimeoutMs = 3000UL;
+static const unsigned long kModbusServiceHeartbeatTimeoutMs = 10000UL;
 static const unsigned long kMqttServiceHeartbeatTimeoutMs = 5000UL;
 static const uint8_t kModbusFailureDegradeThreshold = 3U;
 
@@ -47,7 +56,7 @@ static const char* const kMqttBrokerHost = "192.168.1.100";
 static const uint16_t kMqttBrokerPort = 1883U;
 static const char* const kMqttClientId = "iris-controls-opta";
 static const char* const kMqttUsername = "opta";
-static const char* const kMqttPassword = "opta_password_change_me";
+static const char* const kMqttPassword = IRIS_MQTT_PASSWORD;
 static const char* const kMqttTopicBase = "iris/wolds/tunnel1";
 static const char* const kMqttTelemetryTopic = "iris/wolds/tunnel1/telemetry/v2";
 

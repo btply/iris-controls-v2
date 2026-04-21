@@ -7,7 +7,7 @@
 #include "../core/DeviceRegistry.h"
 #include "../services/CurtainService.h"
 #include "../services/ModbusService.h"
-#include "../services/MqttServiceLite.h"
+#include "../services/MqttService.h"
 
 class AppLifecycle {
  public:

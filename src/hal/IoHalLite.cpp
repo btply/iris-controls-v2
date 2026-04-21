@@ -4,14 +4,19 @@
 #include "../services/LoggerService.h"
 #include <Arduino.h>
 #include <OptaBlue.h>
+#include <mbed.h>
 
 namespace {
+
+rtos::Mutex s_ioMutex;
 
 bool s_initialized = false;
 bool s_directionHigh = false;
 bool s_outputEnabled[CurtainHardware::kOutputChannelCount] = {false, false, false, false};
 bool s_expansionBound = false;
 bool s_expansionConfigured = false;
+int8_t s_boundExpansionIndex = -1;
+uint8_t s_expansionOutputState = 0U;
 bool s_expansionWriteHealthy = true;
 bool s_expansionOutputStateUncertain = false;
 unsigned long s_expansionWriteFailures = 0UL;
@@ -39,12 +44,14 @@ bool applyOnboardOutput(uint8_t channel, bool enabled) {
   return false;
 }
 
-bool bindExpansion() {
+bool bindExpansionLocked() {
+  s_boundExpansionIndex = -1;
   const int expansionCount = OptaController.getExpansionNum();
   for (int i = 0; i < expansionCount; i++) {
     const int expansionType = OptaController.getExpansionType(i);
     if (expansionType == EXPANSION_OPTA_DIGITAL_MEC ||
         expansionType == EXPANSION_OPTA_DIGITAL_STS) {
+      s_boundExpansionIndex = static_cast<int8_t>(i);
       s_expansionBound = true;
       s_expansionConfigured = true;
       return true;
@@ -55,9 +62,8 @@ bool bindExpansion() {
   return false;
 }
 
-bool writeExpansionChannel(uint8_t channel, bool enabled) {
-  (void)channel;
-  if (!s_expansionBound || !s_expansionConfigured) {
+bool writeExpansionChannelLocked(uint8_t channel, bool enabled) {
+  if (s_boundExpansionIndex < 0 || !s_expansionBound || !s_expansionConfigured) {
     s_expansionWriteHealthy = false;
     s_expansionOutputStateUncertain = true;
     s_expansionWriteFailures++;
@@ -65,20 +71,27 @@ bool writeExpansionChannel(uint8_t channel, bool enabled) {
     return false;
   }
 
-  const unsigned int mask = enabled ? 0x01U : 0x00U;
-  const int expansionCount = OptaController.getExpansionNum();
-  for (int i = 0; i < expansionCount; i++) {
-    Opta::Expansion* expansion = OptaController.getExpansionPtr(i);
-    if (expansion == nullptr) {
-      continue;
-    }
-    expansion->write(ADD_DIGITAL_OUTPUT, mask);
-    if (expansion->execute(SET_DIGITAL_OUTPUT) == 0U) {
-      s_expansionWriteHealthy = true;
-      s_expansionOutputStateUncertain = false;
-      s_expansionConsecutiveFailures = 0UL;
-      return true;
-    }
+  Opta::Expansion* expansion = OptaController.getExpansionPtr(s_boundExpansionIndex);
+  if (expansion == nullptr) {
+    s_expansionWriteHealthy = false;
+    s_expansionOutputStateUncertain = true;
+    s_expansionWriteFailures++;
+    s_expansionConsecutiveFailures++;
+    return false;
+  }
+
+  if (enabled) {
+    s_expansionOutputState |= static_cast<uint8_t>(1U << channel);
+  } else {
+    s_expansionOutputState &= static_cast<uint8_t>(~(1U << channel));
+  }
+
+  expansion->write(ADD_DIGITAL_OUTPUT, static_cast<unsigned int>(s_expansionOutputState));
+  if (expansion->execute(SET_DIGITAL_OUTPUT) == 0U) {
+    s_expansionWriteHealthy = true;
+    s_expansionOutputStateUncertain = false;
+    s_expansionConsecutiveFailures = 0UL;
+    return true;
   }
 
   s_expansionWriteHealthy = false;
@@ -88,50 +101,16 @@ bool writeExpansionChannel(uint8_t channel, bool enabled) {
   return false;
 }
 
-}  // namespace
-
-namespace IoHal {
-
-void begin() {
-  pinMode(CurtainHardware::kDirectionPin, OUTPUT);
-  pinMode(CurtainHardware::kDirectionLedPin, OUTPUT);
-  pinMode(CurtainHardware::kOutput1Pin, OUTPUT);
-  pinMode(CurtainHardware::kOutput1LedPin, OUTPUT);
-  pinMode(CurtainHardware::kOutput2Pin, OUTPUT);
-  pinMode(CurtainHardware::kOutput2LedPin, OUTPUT);
-  pinMode(CurtainHardware::kOutput3Pin, OUTPUT);
-  pinMode(CurtainHardware::kOutput3LedPin, OUTPUT);
-
-  writeSharedSignalLevel(false, false);
-  disableAllOutputs();
-  bindExpansion();
-
-  s_initialized = true;
-  LoggerService::info("IoHal", "initialized");
-}
-
-void update() {
-  const unsigned long nowMs = millis();
-  if (!s_expansionBound && nowMs - s_lastRebindAttemptMs >= kRebindIntervalMs) {
-    s_lastRebindAttemptMs = nowMs;
-    if (bindExpansion()) {
-      LoggerService::info("IoHal", "expansion_bound");
+bool anyOutputEnabledLocked() {
+  for (uint8_t i = 0; i < CurtainHardware::kOutputChannelCount; i++) {
+    if (s_outputEnabled[i]) {
+      return true;
     }
   }
+  return false;
 }
 
-bool writeSharedSignalLevel(bool high, bool enforceOutputInterlock) {
-  if (enforceOutputInterlock && high != s_directionHigh && isAnyOutputEnabled()) {
-    disableAllOutputs();
-  }
-  s_directionHigh = high;
-  const int level = high ? HIGH : LOW;
-  digitalWrite(CurtainHardware::kDirectionPin, level);
-  digitalWrite(CurtainHardware::kDirectionLedPin, level);
-  return true;
-}
-
-bool writeOutput(uint8_t outputChannel, bool enabled, bool warnIfUnavailable) {
+bool writeOutputLocked(uint8_t outputChannel, bool enabled, bool warnIfUnavailable) {
   if (outputChannel >= CurtainHardware::kOutputChannelCount) {
     return false;
   }
@@ -140,7 +119,7 @@ bool writeOutput(uint8_t outputChannel, bool enabled, bool warnIfUnavailable) {
   if (outputChannel <= 2U) {
     ok = applyOnboardOutput(outputChannel, enabled);
   } else {
-    ok = writeExpansionChannel(CurtainHardware::kOutput4ExpansionChannel, enabled);
+    ok = writeExpansionChannelLocked(CurtainHardware::kOutput4ExpansionChannel, enabled);
   }
 
   if (ok) {
@@ -153,22 +132,80 @@ bool writeOutput(uint8_t outputChannel, bool enabled, bool warnIfUnavailable) {
   return false;
 }
 
-void disableAllOutputs() {
+void disableAllOutputsLocked() {
   for (uint8_t i = 0; i < CurtainHardware::kOutputChannelCount; i++) {
-    (void)writeOutput(i, false, false);
+    (void)writeOutputLocked(i, false, false);
   }
+}
+
+}  // namespace
+
+namespace IoHal {
+
+void begin() {
+  mbed::ScopedLock<rtos::Mutex> lock(s_ioMutex);
+
+  pinMode(CurtainHardware::kDirectionPin, OUTPUT);
+  pinMode(CurtainHardware::kDirectionLedPin, OUTPUT);
+  pinMode(CurtainHardware::kOutput1Pin, OUTPUT);
+  pinMode(CurtainHardware::kOutput1LedPin, OUTPUT);
+  pinMode(CurtainHardware::kOutput2Pin, OUTPUT);
+  pinMode(CurtainHardware::kOutput2LedPin, OUTPUT);
+  pinMode(CurtainHardware::kOutput3Pin, OUTPUT);
+  pinMode(CurtainHardware::kOutput3LedPin, OUTPUT);
+
+  s_directionHigh = false;
+  const int level = LOW;
+  digitalWrite(CurtainHardware::kDirectionPin, level);
+  digitalWrite(CurtainHardware::kDirectionLedPin, level);
+
+  disableAllOutputsLocked();
+  bindExpansionLocked();
+
+  s_initialized = true;
+  LoggerService::info("IoHal", "initialized");
+}
+
+void update() {
+  mbed::ScopedLock<rtos::Mutex> lock(s_ioMutex);
+  const unsigned long nowMs = millis();
+  if (!s_expansionBound && nowMs - s_lastRebindAttemptMs >= kRebindIntervalMs) {
+    s_lastRebindAttemptMs = nowMs;
+    if (bindExpansionLocked()) {
+      LoggerService::info("IoHal", "expansion_bound");
+    }
+  }
+}
+
+bool writeSharedSignalLevel(bool high, bool enforceOutputInterlock) {
+  mbed::ScopedLock<rtos::Mutex> lock(s_ioMutex);
+  if (enforceOutputInterlock && high != s_directionHigh && anyOutputEnabledLocked()) {
+    disableAllOutputsLocked();
+  }
+  s_directionHigh = high;
+  const int lvl = high ? HIGH : LOW;
+  digitalWrite(CurtainHardware::kDirectionPin, lvl);
+  digitalWrite(CurtainHardware::kDirectionLedPin, lvl);
+  return true;
+}
+
+bool writeOutput(uint8_t outputChannel, bool enabled, bool warnIfUnavailable) {
+  mbed::ScopedLock<rtos::Mutex> lock(s_ioMutex);
+  return writeOutputLocked(outputChannel, enabled, warnIfUnavailable);
+}
+
+void disableAllOutputs() {
+  mbed::ScopedLock<rtos::Mutex> lock(s_ioMutex);
+  disableAllOutputsLocked();
 }
 
 bool isAnyOutputEnabled() {
-  for (uint8_t i = 0; i < CurtainHardware::kOutputChannelCount; i++) {
-    if (s_outputEnabled[i]) {
-      return true;
-    }
-  }
-  return false;
+  mbed::ScopedLock<rtos::Mutex> lock(s_ioMutex);
+  return anyOutputEnabledLocked();
 }
 
 bool isOutputAvailable(uint8_t outputChannel) {
+  mbed::ScopedLock<rtos::Mutex> lock(s_ioMutex);
   if (outputChannel <= 2U) {
     return true;
   }
@@ -176,6 +213,7 @@ bool isOutputAvailable(uint8_t outputChannel) {
 }
 
 Status getStatus() {
+  mbed::ScopedLock<rtos::Mutex> lock(s_ioMutex);
   Status status = {};
   status.initialized = s_initialized;
   status.expansionBound = s_expansionBound;

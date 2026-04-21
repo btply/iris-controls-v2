@@ -23,9 +23,8 @@ class WeatherDevice : public IModbusDevice {
   }
 
   void reset() {
-    stateMutex.lock();
+    mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
     snapshot = WeatherSnapshot{};
-    stateMutex.unlock();
   }
 
   bool updateFromRegisters(const uint16_t* regs,
@@ -34,7 +33,7 @@ class WeatherDevice : public IModbusDevice {
     if (regs == nullptr || registerCount < 8U) {
       return false;
     }
-    stateMutex.lock();
+    mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
 
     const uint32_t windRawUnsigned =
         (static_cast<uint32_t>(regs[0]) << 16) | static_cast<uint32_t>(regs[1]);
@@ -47,32 +46,25 @@ class WeatherDevice : public IModbusDevice {
     snapshot.windSpeedMps = static_cast<float>(windRaw) / 1000.0f;
     snapshot.rainDetected = (static_cast<float>(rainRaw) / 1000.0f) > 0.0f;
     snapshot.lastUpdateMs = nowMs;
-    stateMutex.unlock();
     return true;
   }
 
   void markInvalid() override {
-    stateMutex.lock();
+    mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
     snapshot.valid = false;
-    stateMutex.unlock();
   }
 
   WeatherSnapshot getSnapshot() const {
-    stateMutex.lock();
-    const WeatherSnapshot copy = snapshot;
-    stateMutex.unlock();
-    return copy;
+    mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
+    return snapshot;
   }
 
   bool isFresh(unsigned long nowMs, unsigned long maxAgeMs) const {
-    stateMutex.lock();
+    mbed::ScopedLock<rtos::Mutex> lock(stateMutex);
     if (!snapshot.valid || snapshot.lastUpdateMs == 0UL || nowMs < snapshot.lastUpdateMs) {
-      stateMutex.unlock();
       return false;
     }
-    const bool fresh = (nowMs - snapshot.lastUpdateMs) <= maxAgeMs;
-    stateMutex.unlock();
-    return fresh;
+    return (nowMs - snapshot.lastUpdateMs) <= maxAgeMs;
   }
 
  private:
